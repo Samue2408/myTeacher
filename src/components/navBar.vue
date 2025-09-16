@@ -18,7 +18,10 @@
       </ul>
     </aside>
 
-    <div class="nav__buttons"></div>
+    <div class="nav__buttons">
+      <button>Iniciar sesión</button>
+      <button>Registrarme</button>
+    </div>
 
     <div class="nav__button-burguer">
       <button :class="{ active: isOpen }" @click="isOpen = !isOpen">
@@ -46,6 +49,8 @@ const isOpen = ref(false);
   align-items: center;
   justify-content: space-between;
   padding: 10px;
+  position: sticky;
+  top: 0;
 }
 
 .nav .nav__title {
@@ -66,11 +71,31 @@ const isOpen = ref(false);
   display: none;
 }
 
-.nav .nav__sidebar{
-    position: absolute;
-    left: 0;
-    top: 12vh;
-    border: 1px solid red;
+.nav .nav__sidebar {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: calc(8vh - .5vh);
+  background-color: var(--color-primary);
+  border: none;
+}
+
+.nav .nav__sidebar ul {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav .nav__sidebar ul li{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 20px;
+  color: white;
+  cursor: pointer;
+  font-weight: 400;
 }
 
 .nav .nav__button-burguer {
@@ -124,25 +149,23 @@ const isOpen = ref(false);
   }
 
   .nav .nav__sidebar {
+    position: static;
     display: flex;
+    justify-content: space-between;
     height: 100%;
-    width: 60%;
+    width: 16%;
   }
 
   .nav .nav__sidebar ul {
     width: 100%;
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 10px;
   }
 
   .nav .nav__sidebar ul li {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    font-size: clamp(12px, 1.5vw, 18px);
-    gap: 4px;
-    color: var(--color-bg);
+    padding: 0;
   }
 
   .nav .nav__sidebar ul li span {
@@ -157,8 +180,34 @@ const isOpen = ref(false);
 
   .nav .nav__buttons {
     display: flex;
+    gap: 10px;
     height: 100%;
-    width: 20%;
+    width: 16%;
   }
+
+  .nav .nav__buttons button{
+    padding: 5px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 90%;
+  }
+
+  .nav .nav__buttons button:first-of-type{
+    background-color: white;
+    color: var(--color-primary);
+    transition: all .5s ease;
+  }
+
+  .nav .nav__buttons button:first-of-type:hover{
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  
+
 }
 </style>
