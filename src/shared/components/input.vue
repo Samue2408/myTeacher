@@ -30,8 +30,8 @@ const onInput = (e: Event) => {
       class="input-field"
     />
 
-    <span v-if="icon" class="input-icon">
-      <i :class="`icon-${icon}`"></i>
+    <span v-if="icon" class="input-icon material-icons-outlined" >
+      {{ icon  }}
     </span>
   </div>
 </template>
@@ -41,8 +41,8 @@ const onInput = (e: Event) => {
   display: flex;
   align-items: center;
   background: #f2f2f2;
-  border-radius: 8px;
-  padding: 6px 10px;
+  border-radius: 6px;
+  padding: 15px 10px;
   width: 100%;
   max-width: 400px;
 }
@@ -61,7 +61,7 @@ const onInput = (e: Event) => {
 }
 
 .input-icon {
-  color: #666;
+  color: var(--color-gray);
   margin-left: 8px;
   font-size: 16px;
   display: flex;
