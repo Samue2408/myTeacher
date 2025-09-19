@@ -20,6 +20,14 @@
 <style>
 @import "../_global.css";
 
+main {
+  background: linear-gradient(
+    180deg,
+    rgba(83, 127, 213, 0.2) 0%,
+    rgba(249, 249, 249, 0.02) 100%
+  );
+}
+
 .hero {
   width: 100%;
   height: calc(100vh - 8vh);
@@ -49,6 +57,7 @@
 }
 .hero .hero__title h1 span {
     font-size: clamp(3.5rem, 1vw, 4rem);
+    font-weight: 800;
     color: var(--color-primary);
     animation: fadeIn 0.5s ease;
 }

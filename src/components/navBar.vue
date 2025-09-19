@@ -19,8 +19,8 @@
     </aside>
 
     <div class="nav__buttons">
-      <button>Iniciar sesión</button>
       <button>Registrarme</button>
+      <button>Iniciar sesión</button>
     </div>
 
     <div class="nav__button-burguer">
@@ -51,6 +51,7 @@ const isOpen = ref(false);
   padding: 10px;
   position: sticky;
   top: 0;
+  z-index: 100;
 }
 
 .nav .nav__title {
@@ -73,6 +74,7 @@ const isOpen = ref(false);
 
 .nav .nav__sidebar {
   width: 100%;
+  display: none;
   position: absolute;
   left: 0;
   top: calc(8vh - .5vh);
@@ -143,6 +145,8 @@ const isOpen = ref(false);
   transform: translateY(-28px) rotate(-45deg);
 }
 
+
+
 @media (min-width: 1280px) {
   .nav .nav__button-burguer {
     display: none;
@@ -186,7 +190,7 @@ const isOpen = ref(false);
   }
 
   .nav .nav__buttons button{
-    padding: 5px;
+    padding: 5px 10px;
     box-sizing: border-box;
     border-radius: 4px;
     display: flex;

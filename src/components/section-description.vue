@@ -5,7 +5,7 @@
     <button>Empieza ya</button>
   </div>
 </template>
-<style>
+<style scoped>
 @import "../_global.css";
 
 .section {
