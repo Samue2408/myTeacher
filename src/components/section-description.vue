@@ -17,6 +17,8 @@
   align-items: center;
   justify-content: center;
   gap: 15px;
+  margin-top: 50px;
+  padding: 18px;
 }
 
 .section h2{
@@ -28,6 +30,7 @@
 
 .section p{
     color: var( --color-border);
+    text-align: center;
 }
 
 .section button{
@@ -36,6 +39,18 @@
     color: var(--color-primary);
     padding: 10px;
     box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .section h2{
+    max-width: 90%;
+    font-size: 1.5rem;
+}
+
+.section p{
+    color: var( --color-border);
+    font-size: 15px;
+}
 }
 
 </style>

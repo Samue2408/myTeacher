@@ -24,24 +24,24 @@ export default {
                 { 
                     id: 2, 
                     title: 'Busca un  tutor', 
-                    title_content: 'contenido de informacion',
-                    sub_content: 'En cada paso verás como poder interactuar con nosotros',
+                    title_content: 'Explora los perfiles de nuestros tutores',
+                    sub_content: 'Podrás filtrar por materia, nivel académico y disponibilidad para encontrar al tutor ideal.',
                     img: '/img/stepbystep//primera.png',
-                    callToAction: 'Buscar'
+                    callToAction: 'Buscar tutor'
                 },
                 { 
                     id: 3, 
                     title: 'Reserva tu clase', 
-                    title_content: 'contenido de Ajustes',
-                    sub_content: 'En cada paso verás como poder interactuar con nosotros',
+                    title_content: 'Elige el horario que más se adapte a ti',
+                    sub_content: 'Confirma la reserva en pocos clics y asegura tu espacio con el tutor seleccionado.',
                     img: '/img/stepbystep//primera.png',
-                    callToAction: 'Reservar'
+                    callToAction: 'Reservar ahora'
                 },
                 { 
                     id: 4, 
                     title: 'Asiste a tu clase', 
-                    title_content: 'contenido de Ayuda',
-                    sub_content: 'En cada paso verás como poder interactuar con nosotros',
+                    title_content: 'Conéctate desde cualquier lugar o presencial',
+                    sub_content: 'Accede al aula virtual en la fecha y hora establecida para disfrutar de tu clase en tiempo real.',
                     img: '/img/stepbystep//primera.png',
                     callToAction: 'Ver mis clases'
                 }
@@ -98,7 +98,7 @@ export default {
 
     @media (max-width: 600px) {
         .section h2 {
-            max-width: 80%;
+            max-width: 90%;
             font-size: 24px;
         }
         .section sub{
