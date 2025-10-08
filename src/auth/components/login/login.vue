@@ -46,16 +46,22 @@
             icon="lock"
           />
 
-          <div class="view-password">
-            <input type="checkbox" v-model="showPassword" />
-            <span>Ver contraseña</span>
-          </div>
+          <footer class="options">
+            <div class="view-password">
+              <input type="checkbox" v-model="showPassword" />
+              <span>Ver contraseña</span>
+            </div>
+            <div class="redirect-signup">
+              <span>¿No tienes una cuenta?</span>
+              <a href="/auth/signup">Regístrate</a>
+            </div>
+          </footer>
         </div>
 
         <!-- Submit -->
-        <button class="form-submit" type="submit">
+        <a class="form-submit" type="submit" href="/">
           <span>Iniciar sesión</span>
-        </button>
+        </a>
       </form>
     </aside>
   </main>
@@ -200,7 +206,7 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: start;
   justify-content: center;
-  gap: 20px;
+  gap: 40px;
   padding-left: 40px;
 }
 
@@ -217,19 +223,37 @@ onUnmounted(() => {
 
 .login .login-forms form .user-name,
 .password {
-  width: 70%;
+  width: 80%;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.login .login-forms form .password .view-password {
-  padding-block: 10px;
+.login .login-forms form .password .options {
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: space-between;
+}
+
+.login .login-forms form .password .options .view-password {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: var(--font-12);
-  color: var(--color-muted);
+  color: var(--color-gray);
+}
+
+.login .login-forms form .password .options .redirect-signup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-12);
+  color: var(--color-gray);
+}
+.login .login-forms form .password .options .redirect-signup a{
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .login .login-forms form .form-submit {
@@ -238,7 +262,7 @@ onUnmounted(() => {
   padding: 10px;
   padding-block: 12px;
   box-sizing: border-box;
-  width: 70%;
+  width: 80%;
   border-radius: 6px;
   display: flex;
   justify-content: center;
@@ -248,5 +272,34 @@ onUnmounted(() => {
 
 .login .login-forms form .form-submit:hover {
   background-color: var(--color-primary-dark);
+}
+
+@media (max-width: 768px) {
+  .login {
+    flex-direction: column-reverse;
+  }
+
+  .login .login-image {
+    display: none;
+  }
+
+  .login .login-forms {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .login .login-forms form {
+    width: 90%;
+    height: auto;
+    padding: 20px;
+    padding-left: 20px;
+    gap: 30px;
+  }
+
+  .login .login-forms form .user-name,
+  .password,
+  .form-submit {
+    width: 100%;
+  }
 }
 </style>

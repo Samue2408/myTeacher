@@ -19,8 +19,8 @@
     </aside>
 
     <div class="nav__buttons">
-      <button>Registrarme</button>
-      <button>Iniciar sesión</button>
+      <a>Registrarme</a>
+      <a href="/user/login">Iniciar sesión</a>
     </div>
 
     <div class="nav__button-burguer">
@@ -189,7 +189,7 @@ const isOpen = ref(false);
     width: 16%;
   }
 
-  .nav .nav__buttons button{
+  .nav .nav__buttons a{
     padding: 5px 10px;
     box-sizing: border-box;
     border-radius: 4px;
@@ -200,13 +200,13 @@ const isOpen = ref(false);
     font-size: 90%;
   }
 
-  .nav .nav__buttons button:first-of-type{
+  .nav .nav__buttons a:first-of-type{
     background-color: white;
     color: var(--color-primary);
     transition: all .5s ease;
   }
 
-  .nav .nav__buttons button:first-of-type:hover{
+  .nav .nav__buttons a:first-of-type:hover{
     background-color: var(--color-primary);
     color: white;
   }

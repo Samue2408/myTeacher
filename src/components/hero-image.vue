@@ -20,13 +20,6 @@
 <style>
 @import "../_global.css";
 
-main {
-  background: linear-gradient(
-    180deg,
-    rgba(83, 127, 213, 0.2) 0%,
-    rgba(249, 249, 249, 0.02) 100%
-  );
-}
 
 .hero {
   width: 100%;
