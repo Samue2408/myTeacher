@@ -2,7 +2,7 @@
     <div class="section">
         <h2>Aprender nunca fue tan fácil, rápido y a tu medida</h2>
         <sub>En cada paso verás como poder interactuar con nosotros</sub>
-        <NavTabs :items="items"/>
+        <NavTabs :items="items" :nav-enabled="1"/>
     </div>
 </template>
 
@@ -26,7 +26,7 @@ export default {
                     title: 'Busca un  tutor', 
                     title_content: 'Explora los perfiles de nuestros tutores',
                     sub_content: 'Podrás filtrar por materia, nivel académico y disponibilidad para encontrar al tutor ideal.',
-                    img: '/img/stepbystep//primera.png',
+                    img: '/img/stepbystep//segunda.png',
                     callToAction: 'Buscar tutor'
                 },
                 { 
@@ -71,7 +71,6 @@ export default {
         gap: 5px;
         overflow: hidden;
         padding-inline: 15px;
-
     }
 
     .section h2 {
@@ -82,9 +81,9 @@ export default {
     }
 
     .section sub{
-        color: #7A7A7A;
+        color: var(--color-muted);;
         font-size: 18px;
-        font-weight: lighter;
+        font-weight: light;
         text-align: center;
     }
 
@@ -97,6 +96,10 @@ export default {
     }
 
     @media (max-width: 600px) {
+
+        .section {
+            padding-top: 20px;
+        }
         .section h2 {
             max-width: 90%;
             font-size: 24px;

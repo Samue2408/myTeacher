@@ -1,6 +1,6 @@
 <template>
-  <nav class="nav">
-    <h1 class="nav__title">
+  <nav style="view-transition-name: navbar-box;" class="nav">
+    <h1 @click="goToHome" class="nav__title">
       <span>MT</span>
       myTeacher
     </h1>
@@ -19,8 +19,12 @@
     </aside>
 
     <div class="nav__buttons">
-      <a>Registrarme</a>
-      <a href="/user/login">Iniciar sesión</a>
+      <div>
+        <button>Registrarme</button>
+      </div>
+      <div>
+        <button @click="goToLogIn">Iniciar sesión</button>
+      </div>
     </div>
 
     <div class="nav__button-burguer">
@@ -34,9 +38,23 @@
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
 import { ref } from "vue";
 
+const router = useRouter();
+
+// Navegación con transición
+const goToHome = () => {
+  router.push({ path: "/"});
+};
+
+const goToLogIn = () => {
+  router.push({ path: "/user/login"});
+};
+
+
 const isOpen = ref(false);
+
 </script>
 
 <style>
@@ -55,8 +73,10 @@ const isOpen = ref(false);
 }
 
 .nav .nav__title {
+  margin-left: 10px;
   color: var(--color-bg);
   font-size: clamp(18px, 2vw, 20px);
+  cursor: pointer;
 }
 
 .nav .nav__title span {
@@ -147,6 +167,7 @@ const isOpen = ref(false);
 
 
 
+
 @media (min-width: 1280px) {
   .nav .nav__button-burguer {
     display: none;
@@ -184,13 +205,13 @@ const isOpen = ref(false);
 
   .nav .nav__buttons {
     display: flex;
+    align-items: center;
     gap: 10px;
     height: 100%;
-    width: 16%;
   }
 
-  .nav .nav__buttons a{
-    padding: 5px 10px;
+  .nav .nav__buttons div button{
+    padding: 8px 15px;
     box-sizing: border-box;
     border-radius: 4px;
     display: flex;
@@ -198,16 +219,18 @@ const isOpen = ref(false);
     justify-content: center;
     color: white;
     font-size: 90%;
+    font-weight: 500;
+    transition: all .3s ease;
   }
 
-  .nav .nav__buttons a:first-of-type{
+  .nav .nav__buttons div:first-of-type button{
     background-color: white;
     color: var(--color-primary);
-    transition: all .5s ease;
+    
   }
 
-  .nav .nav__buttons a:first-of-type:hover{
-    background-color: var(--color-primary);
+  .nav .nav__buttons div button:hover{
+    background-color: #0f63b6;
     color: white;
   }
 

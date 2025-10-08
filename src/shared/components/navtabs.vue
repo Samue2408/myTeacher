@@ -7,6 +7,7 @@
           @click="handleTabClick(item)" 
           :class="{ 'activeTab': activeTab === item.id }"
         >
+          
           {{ item.title }}
         </nav>
       </div>
@@ -21,7 +22,12 @@ import { defineAsyncComponent } from 'vue'
 export default {
     name: 'navTabs',
     props: {
-      items: Array
+      items: Array,
+      navEnabled: Number,
+      disabledTabs: {
+        type: Boolean,
+        default: false
+      }
     },
     data() {
       return{
@@ -34,6 +40,7 @@ export default {
     },
     methods: {
         handleTabClick: function(item) {
+          if(this.disabledTabs)return;
           this.activeTab = item.id
           this.currentItem = item 
         }
@@ -41,7 +48,7 @@ export default {
     components: {
       Item: defineAsyncComponent(() => import('./item_img.vue'))
     }
-};
+}
 
 </script>
 
@@ -60,8 +67,8 @@ export default {
     margin: auto;
     gap: 19px;
     margin-top: 48px;
-    -webkit-mask-image: linear-gradient(90deg, #0000, #000 2% 95%, #0000);
-    mask-image: linear-gradient(90deg, #0000, #000 2% 95%, #0000);
+    -webkit-mask-image: linear-gradient(90deg, #0000, #000 5% 95%, #0000);
+    mask-image: linear-gradient(90deg, #0000, #000 5% 95%, #0000);
   }
 
   nav {
@@ -80,6 +87,12 @@ export default {
   nav.activeTab {
     background-color: var(--color-primary);
     color: white;
+  }
+
+  nav.disabledTabs {
+    opacity: .2;
+    pointer-events: none;
+    user-select: none;
   }
 
   .navtabs::-webkit-scrollbar {
@@ -120,6 +133,7 @@ export default {
       justify-content: start;
       gap: 10px;   
       margin-top: 30px;
+      padding-inline: 10px;
     }    
   } 
     

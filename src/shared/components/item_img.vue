@@ -7,7 +7,9 @@
         <a href="">{{ item.callToAction }}</a>
       </div>
     </div>
-    <img :src="item.img" :alt="item.title">
+    <figure>
+          <img :src="item.img" :alt="item.title">
+    </figure>
 
   </div>
 </template>
@@ -42,15 +44,15 @@ export default {
 
   .tab-panel img {
     height: 300px;
-    margin-top: 30px;
-    margin-bottom: 50px;
+    margin-top: 20px;
+    margin-bottom: 40px;
   }
 
   .tab-panel .tab-panel-content {
     padding: 30px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
     height: 100%;
   }
 
@@ -67,6 +69,7 @@ export default {
     font-weight: 700;
     font-size: 30px;
     max-width: 280px;
+    line-height: 1.2;
   }
 
   .tab-panel .tab-panel-content p {
@@ -90,14 +93,23 @@ export default {
       gap: 30px;
     }
 
-    .tab-panel img {
-      height: 500px;
+    .tab-panel figure{
+      margin: 0;
+      padding: 0;
+      width: 50%;
+      height: 100%;
+    }
+
+    .tab-panel figure img {
+      height: 100%;
+      width: 100%;
       margin: 0;
     }
 
     .tab-panel .tab-panel-content h3 {
       max-width: 400px;
       font-size: 40px;
+      line-height: 1.4;
     }
 
     .tab-panel .tab-panel-content p {
