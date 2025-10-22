@@ -46,6 +46,7 @@ export default {
     height: 300px;
     margin-top: 20px;
     margin-bottom: 40px;
+    border-radius: 29px;  
   }
 
   .tab-panel .tab-panel-content {

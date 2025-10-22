@@ -23,31 +23,47 @@ export const useTutorsStore = defineStore('tutors', {
         // this.tutors = res.data
 
         // 🔥 MOCK DATA (luego aquí va tu fetch con axios o fetch API)
-        this.tutors = [
-          {
-            id: 1,
-            name: 'Juan Pérez',
-            subject: 'Matemáticas',
-            price: 25000,
-            description: 'Especialista en álgebra y cálculo diferencial.',
-            img: '/images/tutors/juan.jpg'
-          },
-          {
-            id: 2,
-            name: 'Ana Gómez',
-            subject: 'Inglés',
-            price: 30000,
-            description: 'Profesora con 5 años de experiencia enseñando inglés conversacional.',
-            img: '/images/tutors/ana.jpg'
-          },
-          {
-            id: 3,
-            name: 'Carlos Ruiz',
-            subject: 'Física',
-            price: 28000,
-            description: 'Apasionado por la física cuántica y la enseñanza.',
-            img: '/images/tutors/carlos.jpg'
-          }
+        this.tutors =  [
+            {
+                id: 1,
+                name: "Laura Gómez",
+                description: "Educación Superior",
+                subject: "Matemáticas",
+                price: 35000,
+                img: "https://randomuser.me/api/portraits/women/44.jpg"
+            },
+            {
+                id: 2,
+                name: "Carlos Ramírez",
+                description: "Secundaria",
+                subject: "Física",
+                price: 40000,
+                img: "https://randomuser.me/api/portraits/men/32.jpg"
+            },
+            {
+                id: 3,
+                name: "Ana Torres",
+                description: "Primaria",
+                subject: "Lengua y Literatura",
+                price: 30000,
+                img: "https://randomuser.me/api/portraits/women/68.jpg"
+            },
+            {
+                id: 4,
+                name: "Julián Pérez",
+                description: "Primaria",
+                subject: "Informática",
+                price: 45000,
+                img: "https://randomuser.me/api/portraits/men/12.jpg"
+            },
+            {
+                id: 5,
+                name: "Sofía Hernández",
+                description: "Educación superior",
+                subject: "Inglés",
+                price: 38000,
+                img: "https://randomuser.me/api/portraits/women/26.jpg"
+            }
         ]
 
       } catch (err) {

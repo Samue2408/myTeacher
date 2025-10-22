@@ -8,7 +8,7 @@ interface AuthState {
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    isAuthenticated: true,
+    isAuthenticated: false,
     token: null,
     showLoginModal: false
   }),
