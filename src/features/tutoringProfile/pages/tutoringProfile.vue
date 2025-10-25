@@ -197,7 +197,7 @@ onMounted(async () => {
 
 .dashboard {
   display: flex;
-  height: 100vh;
+  height: calc(100vh - 8vh);
   background: #f9f9fb;
   color: #222;
   font-family: "Inter", sans-serif;
@@ -482,7 +482,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: calc(100vh - 8vh);
 }
 .spinner {
   width: 50px;
