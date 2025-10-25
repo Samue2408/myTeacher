@@ -44,7 +44,6 @@ const onInput = (e: Event) => {
   border-radius: 6px;
   padding: 15px 10px;
   width: 100%;
-  max-width: 400px;
 }
 
 .input-field {

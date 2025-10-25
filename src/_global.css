@@ -149,3 +149,18 @@ table {
 .mb-md {
   margin-bottom: var(--spacing-md);
 }
+
+.loader-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader-container .loader{
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}

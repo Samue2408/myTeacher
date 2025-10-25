@@ -10,10 +10,6 @@
         >Diseñada para transformar la manera en que estudiantes y tutores se
         conectan y comparten conocimiento</span
       >
-      <div class="search" style="view-transition-name: search-box;">
-        <input @keyup.enter="goToSearch" type="text" placeholder="Buscar materias" v-model="query" name="search" />
-        <button @click="goToSearch">Buscar</button>
-      </div>
     </div>
     <div class="hero__image">
       <img src="../assets/hero-image.png" alt="" />
@@ -21,16 +17,6 @@
   </main>
 </template>
 <script setup>
-  import { useRouter } from "vue-router";
-  import { ref } from "vue";
-
-  const router = useRouter();
-  const query = ref("");
-
-  
-  const goToSearch = () => {
-    router.push({ path: "/search", query: { q: query.value } });
-  };
 
 </script>
 <style scoped>
@@ -96,26 +82,35 @@ main {
 }
 
 .hero .hero__title .search {
-  width: 100%;
+  width: 80%;
   margin-top: 10px;
   border-radius: 6px;
   overflow: hidden;
   background-color: var(--color-bg);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: end;
 }
 
 .hero .hero__title .search input {
-  width: 75%;
+  width: 100%;
   padding: 10px 14px;
   font-size: 14px;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
 
 .hero .hero__title .search button{
-  width: 25%;
+  width: 20%;
   padding-block: 10px;
   color: white;
   background-color: var(--color-primary);
   font-size: 14px;
-  border-radius: 6px;
+  border-radius: 0 6px 6px 0;
+  z-index: 10;
+  cursor: pointer;
 }
 
 .hero .hero__image {

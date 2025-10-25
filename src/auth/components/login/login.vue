@@ -1,22 +1,5 @@
 <template>
   <main class="login">
-    <figure class="login-image">
-      <!-- Imagen dinámica -->
-      <img :src="slides[currentIndex].img" :alt="slides[currentIndex].text" />
-
-      <!-- Indicadores -->
-      <div class="login-image--indicator">
-        <span>{{ slides[currentIndex].text }}</span>
-        <div class="steps">
-          <div
-            v-for="(slide, i) in slides"
-            :key="i"
-            class="step"
-            :class="{ active: i === currentIndex }"
-          ></div>
-        </div>
-      </div>
-    </figure>
 
     <aside class="login-forms">
       <form action="" class="form">
@@ -53,15 +36,15 @@
             </div>
             <div class="redirect-signup">
               <span>¿No tienes una cuenta?</span>
-              <a href="/auth/signup">Regístrate</a>
+              <router-link to="/user/signup">Registrate</router-link>
             </div>
           </footer>
         </div>
 
         <!-- Submit -->
-        <a class="form-submit" type="submit" href="/">
-          <span>Iniciar sesión</span>
-        </a>
+        <button class="form-submit" type="submit" href="/">
+          Iniciar sesión
+        </button>
       </form>
     </aside>
   </main>
@@ -122,8 +105,8 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-.login .login-image {
-  width: 70%;
+/* .login .login-image {
+  width: 60%;
   height: 100%;
   object-fit: cover;
   position: relative;
@@ -184,7 +167,7 @@ onUnmounted(() => {
 
 .login .login-image .login-image--indicator .steps .step.active {
   width: 60px;
-}
+} */
 
 .login .login-forms {
   display: flex;
@@ -193,12 +176,12 @@ onUnmounted(() => {
   justify-content: center;
   padding: 10px;
   box-sizing: border-box;
-  width: 40%;
+  width: 50%;
   height: 100%;
 }
 
 .login .login-forms form {
-  width: 100%;
+  width: 80%;
   height: 80%;
   border-radius: 6px;
   background-color: var(--color-white);
@@ -233,13 +216,14 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 10px;
 }
 
 .login .login-forms form .password .options .view-password {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--font-12);
+  font-size: 12px;
   color: var(--color-gray);
 }
 
@@ -247,10 +231,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--font-12);
+  font-size: 12px;
   color: var(--color-gray);
 }
-.login .login-forms form .password .options .redirect-signup a{
+.login .login-forms form .password .options .redirect-signup a {
   color: var(--color-primary);
   text-decoration: none;
   font-weight: 600;
@@ -287,7 +271,7 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
   }
-  
+
   .login .login-forms form {
     width: 90%;
     height: auto;

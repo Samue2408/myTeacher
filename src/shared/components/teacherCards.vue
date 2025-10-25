@@ -1,196 +1,134 @@
 <template>
-  <div class="card">    
-    <div class="card-teacher">
-        <figure class="card-avatar">
-            <img :src="teacher.img" :alt="teacher.title">
-        </figure>
-        <div class="card-info">
-            <h3>{{ teacher.name }}</h3>
-            <p class="desc">{{ teacher.description }}</p>
-            <p class="subj">{{ teacher.subject }}</p>
-        </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="avatar">
+        <img :src="teacher.img" :alt="teacher.name" />
+      </div>
+      <div class="info">
+        <h3>{{ teacher.name }}</h3>
+        <p class="desc">{{ teacher.description }}</p>
+        <p class="subj">{{ teacher.subject }}</p>
+      </div>
     </div>
 
-    <div class="card-subject">
-        <a href="">{{ teacher.subject }}</a>
-    </div>  
-    
-    <div class="card-price">
-        <h5>Precio</h5>
-        <p>$ {{ teacher.price.toLocaleString('es-CO') }}</p>
+    <div class="card-body">
+      <div class="price">
+        <span>Precio</span>
+        <strong>$ {{ teacher.price.toLocaleString('es-CO') }}</strong>
+      </div>
+      <button @click="goToTutoringProfile(teacher.id)">Ver perfil</button>
     </div>
-
-    <button @click="goToTutoringProfile(teacher.id)" class="card-action">
-        Ver
-    </button>
-
   </div>
 </template>
 
 <script setup>
-
 import { useRouter } from 'vue-router'
-
-// Accedemos al router dentro del componente
 const router = useRouter()
-
-// Recibimos la prop
-defineProps({
-  teacher: Object
-})
-
-const goToTutoringProfile = (id) => {
-  router.push({
-    name: 'TutorProfile',
-    params: {id}   // Ruta a la que quieres ir
-  })
-}
-
+defineProps({ teacher: Object })
+const goToTutoringProfile = id => router.push({ name: 'TutorProfile', params: { id } })
 </script>
 
 <style scoped>
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.avatar {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+}
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.info {
+  flex: 1;
+}
+.info h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+.info .desc {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+.info .subj {
+  font-size: 12px;
+  color: var(--color-primary, #0a8e0a);
+  margin-top: 3px;
+  font-weight: 500;
+}
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  border-top: 1px solid #eee;
+  padding-top: 12px;
+}
+.price {
+  display: flex;
+  flex-direction: column;
+}
+.price span {
+  font-size: 11px;
+  color: #999;
+}
+.price strong {
+  font-size: 14px;
+  color: #0a8e0a;
+}
+button {
+  background: var(--color-primary, #0a8e0a);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+button:hover {
+  background: #097a09;
+}
+@media (min-width: 800px) {
   .card {
-    display: grid;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    grid-template-columns: 2fr 1.25fr .5fr;
-    width: 100%;
-    border: 1px solid #EEE;
-    border-radius: 10px;
-    padding: 10px;
-    gap: 6px;
-    transition: all 0.3s ease;
+    padding: 20px 24px;
   }
-
-  .card:hover {
-    scale: 1.01;
+  .card-header {
+    flex: 1.5;
   }
-
-  .card .card-teacher {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .card-body {
+    flex: 1;
+    margin-top: 0;
+    border-top: none;
+    border-left: 1px solid #eee;
+    padding-top: 0;
+    padding-left: 18px;
   }
-
-  .card .card-teacher .card-avatar {
-    height: 40px;
-    width: 40px;
-  }
-
-  .card .card-teacher .card-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 99px;
-  }
-
-  .card .card-teacher .card-info h3 {
-    font-size: 11px;
-  }
-
-  .card .card-teacher .card-info p {
-    font-size: 9px;
-    color: var(--color-muted);
-  }
-
-  .card .card-teacher .card-info .desc{
-    display: none;
-  }
-
-  .card .card-subject {
-    text-align: center;
-    font-size: 10px;
-    display: none;
-    
-  }
-
-  .card .card-price {
-    text-align: center;
-    font-size: 10px;
-  }
-  
-  .card .card-price p {
-    color: #0A8E0A;
-    font-weight: 500;
-  }
-
-
-  .card .card-action {
-    text-align: center;
-    color: #fff;
-    font-size: 9px;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 6px;
-    background-color: #0A8E0A;
-    margin: auto;
-  }
-
-   @media (min-width: 800px) {
-
-    .card {
-      display: grid;
-      grid-template-columns: 2fr 2fr 2fr .5fr;
-    }
-
-    .card .card-teacher .card-info .desc{
-      display: block;
-    }
-
-    .card .card-teacher .card-info .subj{
-      display: none;
-    }
-
-    .card .card-subject {
-      display: block;
-    }
-
-   }
-
-
-  @media (min-width: 1024px) {
-    .card {
-      display: grid;
-      grid-template-columns: 2fr 2fr 2fr .5fr;
-      padding: 15px;
-    }
-
-    .card .card-teacher {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .card .card-teacher .card-avatar {
-      width: 50px;
-      height: 50px;
-    }
-
-    .card .card-teacher .card-info h3 {
-      font-size: 14px;
-    }
-
-    .card .card-teacher .card-info .desc{
-      font-size: 10px;
-    }
-
-    .card .card-subject {
-      font-size: 12px;
-    }
-
-    .card .card-price {
-      text-align: center;
-      font-size: 12px;
-    }
-
-    .card .card-action {
-      font-size: 12px;
-      font-weight: 700;
-      padding: 8px 16px;
-      border-radius: 6px;
-    }
-
-  }
-
-
+}
 </style>

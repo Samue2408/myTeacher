@@ -1,240 +1,244 @@
 <template>
-  <nav style="view-transition-name: navbar-box;" class="nav">
+  <nav class="nav">
     <h1 @click="goToHome" class="nav__title">
       <span>MT</span>
       myTeacher
     </h1>
 
-    <aside class="nav__sidebar">
-      <ul>
-        <li>
-          <span>Servicios</span>
-          <i class="material-icons">expand_more</i>
-        </li>
-        <li>
-          <span>Explorar</span>
-          <i class="material-icons">expand_more</i>
-        </li>
-      </ul>
-    </aside>
+    <div class="nav__actions">
+      <button class="nav__search-button" @click="toggleSearch">
+        <span class="material-icons-outlined">search</span>
+      </button>
 
-    <div class="nav__buttons">
-      <div>
-        <button>Registrarme</button>
-      </div>
-      <div>
-        <button @click="goToLogIn">Iniciar sesión</button>
+      <div class="nav__button-burguer">
+        <button :class="{ active: isOpen }" @click="isOpen = !isOpen">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </div>
 
-    <div class="nav__button-burguer">
-      <button :class="{ active: isOpen }" @click="isOpen = !isOpen">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+    <transition name="slide-down">
+      <div v-if="showSearch" class="nav__search-top">
+        <SearchBar
+          placeholder="¿Qué materia quieres dar hoy?"
+          :items="results"
+          :loading="loading"
+          @search="handleSearch"
+          @select="goToItem"
+          @clear="clearSearch"
+          @enter="goToSearch"
+        />
+      </div>
+    </transition>
+
+    <div class="nav__search-desktop">
+      <SearchBar
+        placeholder="¿Qué materia quieres dar hoy?"
+        :items="results"
+        :loading="loading"
+        @search="handleSearch"
+        @select="goToItem"
+        @clear="clearSearch"
+        @enter="goToSearch"
+      />
+    </div>
+
+    <div class="nav__buttons">
+      <div><button>Registrarme</button></div>
+      <div><button @click="goToLogIn">Iniciar sesión</button></div>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { useRouter } from "vue-router"
+import { ref } from "vue"
+import SearchBar from "@/shared/components/searchBar.vue"
 
-const router = useRouter();
+const router = useRouter()
+const loading = ref(false)
+const results = ref([])
+const isOpen = ref(false)
+const showSearch = ref(false)
 
-// Navegación con transición
-const goToHome = () => {
-  router.push({ path: "/"});
-};
+const handleSearch = (query) => {
+  if (!query) {
+    results.value = []
+    return
+  }
+  loading.value = true
+  setTimeout(() => (loading.value = false), 600)
+}
 
-const goToLogIn = () => {
-  router.push({ path: "/user/login"});
-};
-
-
-const isOpen = ref(false);
-
+const goToHome = () => router.push({ path: "/" })
+const goToSearch = (q) => {
+  if (!q || !q.trim()) return
+  router.push({ path: "/search", query: { q } })
+}
+const goToLogIn = () => router.push({ path: "/user/login" })
+const toggleSearch = () => (showSearch.value = !showSearch.value)
 </script>
 
 <style>
 .nav {
   width: 100%;
   height: 8vh;
-  margin: 0;
   background-color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px;
+  padding: 10px 20px;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.nav .nav__title {
-  margin-left: 10px;
+.nav__title {
   color: var(--color-bg);
   font-size: clamp(18px, 2vw, 20px);
   cursor: pointer;
 }
 
-.nav .nav__title span {
+.nav__title span {
   background-color: white;
   color: var(--color-primary);
   padding: 4px;
-  box-sizing: border-box;
   border-radius: 10px;
   font-weight: 700;
 }
 
-.nav .nav__buttons {
-  display: none;
-}
-
-.nav .nav__sidebar {
-  width: 100%;
-  display: none;
-  position: absolute;
-  left: 0;
-  top: calc(8vh - .5vh);
-  background-color: var(--color-primary);
-  border: none;
-}
-
-.nav .nav__sidebar ul {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.nav .nav__sidebar ul li{
-  width: 100%;
+.nav__actions {
   display: flex;
   align-items: center;
-  justify-content: space-evenly;
-  padding: 20px;
+  gap: 5px;
+}
+
+.nav__search-button {
+  background: none;
+  border: none;
   color: white;
+  font-size: 26px;
   cursor: pointer;
-  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.nav .nav__button-burguer {
+.nav__search-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  width: 60px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 200;
 }
 
-.nav .nav__button-burguer button {
+.nav__search-desktop {
+  display: none;
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.nav__button-burguer {
+  height: 100%;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav__button-burguer button {
   background-color: transparent;
   border: none;
-  outline: none;
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  transform: scale(0.4);
+  gap: 6px;
+  transform: scale(0.5);
   cursor: pointer;
 }
 
-.nav .nav__button-burguer button span {
+.nav__button-burguer button span {
   display: block;
   width: 100%;
-  height: calc(100% / 3);
+  height: 8px;
   background-color: var(--color-bg);
   border-radius: 10px;
   transition: all 0.4s ease;
 }
 
-.nav .nav__button-burguer button span:nth-of-type(2) {
-  width: 80%;
-  align-self: flex-end;
+.nav__button-burguer button.active span:nth-of-type(1) {
+  transform: translateY(20px) rotate(40deg);
 }
 
-.nav .nav__button-burguer button.active span:nth-of-type(1) {
-  transform: translateY(13px) rotate(45deg);
-}
-
-.nav .nav__button-burguer button.active span:nth-of-type(2) {
+.nav__button-burguer button.active span:nth-of-type(2) {
   opacity: 0;
   transform: translateX(-100%);
 }
 
-.nav .nav__button-burguer button.active span:nth-of-type(3) {
-  transform: translateY(-28px) rotate(-45deg);
+.nav__button-burguer button.active span:nth-of-type(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
+.nav__buttons {
+  display: none;
+}
 
+@media (min-width: 1024px) {
+  .nav {
+    gap: 20px;
+  }
 
-
-@media (min-width: 1280px) {
-  .nav .nav__button-burguer {
+  .nav__actions {
     display: none;
   }
 
-  .nav .nav__sidebar {
-    position: static;
-    display: flex;
-    justify-content: space-between;
-    height: 100%;
-    width: 16%;
+  .nav__search-desktop {
+    display: block;
+    flex: 1;
+    max-width: 500px;
   }
 
-  .nav .nav__sidebar ul {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .nav .nav__sidebar ul li {
-    padding: 0;
-  }
-
-  .nav .nav__sidebar ul li span {
-    color: var(--color-bg);
-    font-weight: 500;
-    font-size: 16px;
-  }
-
-  .nav .nav__sidebar ul li i {
-    font-size: clamp(12px, 1.5vw, 18px);
-  }
-
-  .nav .nav__buttons {
+  .nav__buttons {
     display: flex;
     align-items: center;
     gap: 10px;
-    height: 100%;
   }
 
-  .nav .nav__buttons div button{
+  .nav__buttons div button {
     padding: 8px 15px;
-    box-sizing: border-box;
     border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     color: white;
     font-size: 90%;
     font-weight: 500;
-    transition: all .3s ease;
+    transition: all 0.3s ease;
   }
 
-  .nav .nav__buttons div:first-of-type button{
+  .nav__buttons div:first-of-type button {
     background-color: white;
     color: var(--color-primary);
-    
   }
 
-  .nav .nav__buttons div button:hover{
+  .nav__buttons div button:hover {
     background-color: #0f63b6;
     color: white;
   }
-
-  
-
 }
 </style>

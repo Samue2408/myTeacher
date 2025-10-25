@@ -59,7 +59,23 @@ export default {
                 subject: "Inglés",
                 price: 38000,
                 img: "https://randomuser.me/api/portraits/women/26.jpg"
-            }
+            },
+             {
+                id: 6,
+                name: "Sofía Hernández",
+                description: "Educación superior",
+                subject: "Inglés",
+                price: 38000,
+                img: "https://randomuser.me/api/portraits/women/26.jpg"
+            },
+            {
+                id: 5,
+                name: "Sofía Hernández",
+                description: "Educación superior",
+                subject: "Inglés",
+                price: 38000,
+                img: "https://randomuser.me/api/portraits/women/26.jpg"
+            },
         ]
       }
     },
@@ -108,7 +124,11 @@ export default {
         animation: fade-in 0.3s ease-in forwards;
         animation-delay: 0.4s;
         opacity: 0;
+        max-height: 75vh;
+        overflow-y: auto;
     }
+
+    
 
     @keyframes fade-in {
         0% {
