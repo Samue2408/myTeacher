@@ -12,63 +12,66 @@
         </header>
 
         <div class="filter-group">
-          <label>Nivel educativo</label>
-          <ComboBox
-            v-model="filters.level"
-            :items="levels"
-            placeholder="Seleccionar"
-          />
+          <label>Modalidad</label>
+          <div class="tabs">
+            <div class="tab-slider" :style="sliderStyle"></div>
+            <button
+              v-for="(option, index) in allModalities"
+              :key="option.value"
+              class="tab"
+              :class="{ active: filters.modality === option.value }"
+              @click="selectTab(index, option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
         </div>
 
         <div class="filter-group">
-          <label>Materia</label>
-          <ComboBox
-            v-model="filters.subject"
-            :items="subjects"
-            placeholder="Seleccionar"
-          />
-        </div>
-
-        <div class="filter-group">
-          <label>Ordenar por</label>
-          <ComboBox
-            v-model="filters.order"
-            :items="orders"
-            placeholder="Relevancia"
-          />
-        </div>
-
-        <div class="filter-group">
-          <label>Rango de precios</label>
+          <label>Nivel de educación</label>
           <div class="chip-group">
-            <label v-for="range in priceRanges" :key="range.value" class="chip">
+            <label
+              v-for="range in LevelEducations"
+              :key="range.value"
+              class="chip"
+            >
               <input
                 type="checkbox"
                 :value="range.value"
-                v-model="filters.price"
+                v-model="filters.education"
               />
+              <span class="material-icons-outlined icon">{{ range.icon }}</span>
               <span>{{ range.label }}</span>
             </label>
           </div>
         </div>
 
         <div class="filter-group">
-          <label>Modalidad</label>
-          <div class="chip-group radio">
-            <label
-              v-for="option in modalities"
-              :key="option.value"
-              class="chip radio"
-            >
-              <input
-                type="radio"
-                name="modality"
-                :value="option.value"
-                v-model="filters.modality"
-              />
-              <span>{{ option.label }}</span>
-            </label>
+          <label>Ordenar por</label>
+          <div class="dropdowns">
+            <ComboBox
+              v-model="filters.orderBy"
+              :items="orders"
+              placeholder="Seleccionar"
+            />
+            <ComboBox
+              v-model="filters.orderDir"
+              :items="orderDirections"
+              placeholder="Asc/Desc"
+            />
           </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Ranking de tutores</label>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            step="0.5"
+            v-model="filters.ranking"
+          />
+          <span>{{ filters.ranking }}</span>
         </div>
       </aside>
 
@@ -78,50 +81,54 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import results_search from "@/components/search/results_search.vue";
 import ComboBox from "@/shared/components/comboBox.vue";
 
 const filters = ref({
   level: null,
   subject: null,
-  price: [],
-  modality: null,
-  order: null,
+  education: [],
+  modality: "",
+  orderBy: null,
+  orderDir: "desc",
+  ranking: 4.5,
 });
 
-const levels = [
-  { label: "Todos", value: "" },
-  { label: "Primaria", value: "primaria" },
-  { label: "Secundaria", value: "secundaria" },
-  { label: "Educación Superior", value: "superior" },
-];
-
-const subjects = [
+const activeIndex = ref(0);
+const allModalities = [
   { label: "Todas", value: "" },
-  { label: "Matemáticas", value: "matematicas" },
-  { label: "Lengua y Literatura", value: "lengua" },
-  { label: "Física", value: "fisica" },
-  { label: "Inglés", value: "ingles" },
-  { label: "Informática", value: "informatica" },
+  { label: "Presencial", value: "presencial" },
+  { label: "Virtual", value: "virtual" },
 ];
+const selectTab = (index, value) => {
+  activeIndex.value = index;
+  filters.value.modality = value;
+};
+const sliderStyle = computed(() => ({
+  transform: `translateX(${activeIndex.value * 100}%)`,
+}));
 
 const orders = [
   { label: "Relevancia", value: "relevancia" },
-  { label: "Precio más bajo", value: "menor-precio" },
-  { label: "Precio más alto", value: "mayor-precio" },
+  { label: "Precio", value: "precio" },
   { label: "Popularidad", value: "popularidad" },
+  { label: "Ranking de tutores", value: "ranking" },
+];
+const orderDirections = [
+  { label: "ASC", value: "asc" },
+  { label: "DESC", value: "desc" },
 ];
 
-const priceRanges = [
-  { label: "$0 – $30.000", value: "0-30000" },
-  { label: "$30.000 – $50.000", value: "30000-50000" },
-  { label: "$50.000+", value: "50000+" },
-];
-
-const modalities = [
-  { label: "Presencial", value: "presencial" },
-  { label: "Virtual", value: "virtual" },
+const LevelEducations = [
+  { label: "Primaria", value: "primary", icon: "book" },
+  { label: "Secundaria", value: "secondary", icon: "menu_book" },
+  {
+    label: "Educación superior",
+    value: "higher_education",
+    icon: "local_library",
+  },
+  { label: "Profesional", value: "professional", icon: "school" },
 ];
 </script>
 
@@ -140,9 +147,7 @@ main {
 .filters-lg {
   background-color: #fff;
   border-radius: 20px;
-  box-sizing: border-box;
   padding: 12px;
-  box-sizing: border-box;
   display: none;
   transition: all 0.3s ease;
 }
@@ -154,13 +159,8 @@ main {
   margin-bottom: 24px;
 }
 
-.header-icon {
-  color: var(--color-primary);
-  font-size: 22px;
-}
-
 .filters-lg h3 {
-  color:var(--color-primary);
+  color: var(--color-primary);
   font-weight: 700;
   font-size: 18px;
 }
@@ -170,7 +170,8 @@ main {
 }
 
 .filter-group label {
-  display: block;
+  display: flex;
+  align-items: center;
   font-size: 14px;
   font-weight: 600;
   color: #444;
@@ -186,15 +187,15 @@ main {
 .chip {
   border: 1px solid #e2e6ff;
   color: #333;
-  font-weight: 500;
+  font-weight: 200;
   border-radius: 20px;
   padding: 8px 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 6px;
   background: #f5f7ff;
+  transition: all 0.2s ease;
 }
 
 .chip input {
@@ -203,17 +204,66 @@ main {
 
 .chip span {
   pointer-events: none;
+  font-weight: 300;
+  transition: 0.5s ease;
 }
 
 .chip:hover {
   background: #ebf0ff;
 }
 
-.chip input:checked + span {
+.chip input:checked ~ span {
   color: var(--color-primary);
-  font-weight: 700;
 }
 
+.tabs {
+  position: relative;
+  display: flex;
+  background-color: #f5f7ff;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.tab.active {
+  font-weight: 700;
+  color: #fff;
+}
+
+.tab-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / 3);
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: 100px;
+  transition: transform 0.3s ease;
+  z-index: 0;
+}
+
+.dropdowns {
+  display: flex;
+  align-items: center;
+}
+
+.dropdowns .combo-box:first-of-type {
+  width: 80%;
+}
+
+.dropdowns .combo-box:last-of-type {
+  min-width: 20%;
+  max-width: fit-content;
+}
 
 .filters-sm {
   display: flex;
@@ -236,6 +286,11 @@ main {
 
 .material-icons-outlined {
   font-size: 20px;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin-top: 5px;
 }
 
 @media (min-width: 700px) {

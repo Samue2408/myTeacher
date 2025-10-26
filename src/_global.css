@@ -2,15 +2,15 @@
     Variables Globales
    =========================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 
 :root {
   /* Colores */
-  --color-primary: #537FD5;
+  --color-primary: #537fd5;
   --color-primary-dark: #3a5fb0;
   --color-primary-light: #7aa3e8;
   --color-primary-light-2: #eef4ff;
-  --color-white: #FFF;
+  --color-white: #fff;
 
   --color-bg: #ffffff;
   --color-text: #222222;
@@ -20,20 +20,20 @@
   --color-gray: rgb(167, 167, 167);
 
   /* Tipografía */
-  --font-family-base: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-base: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --font-size-base: 16px;
   --font-size-sm: 14px;
   --font-size-lg: 18px;
 
-  --font-10: clamp(10px,1vw,12px);
-  --font-12: clamp(12px,1vw,14px);
-  --font-14: clamp(14px,1vw,16px);
-  --font-16: clamp(16px,1vw,18px);
-  --font-18: clamp(18px,1vw,20px);
-  --font-20: clamp(20px,1vw,22px);
-  --font-30: clamp(30px,1vw,40px);
+  --font-10: clamp(10px, 1vw, 12px);
+  --font-12: clamp(12px, 1vw, 14px);
+  --font-14: clamp(14px, 1vw, 16px);
+  --font-16: clamp(16px, 1vw, 18px);
+  --font-18: clamp(18px, 1vw, 20px);
+  --font-20: clamp(20px, 1vw, 22px);
+  --font-30: clamp(30px, 1vw, 40px);
 
   /* Espaciados */
   --spacing-xs: 0.25rem;
@@ -48,15 +48,14 @@
   --radius-lg: 12px;
 
   /* Sombras */
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.15);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
 
   /* Transiciones */
   --transition-fast: 0.2s ease-in-out;
   --transition-base: 0.3s ease;
 }
-
 
 /* ===========================
     Reset / Normalización
@@ -142,6 +141,130 @@ table {
   text-align: center;
 }
 
+/* === FLEX UTILITIES === */
+
+.flex {
+  display: flex;
+}
+
+/* DIRECCIONES */
+.flex--row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex--col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ALINEACIÓN PRINCIPAL */
+.flex--center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex--between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flex--around {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.flex--evenly {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+/* ALINEACIÓN SECUNDARIA */
+.flex--start {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.flex--end {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* CENTRADO SOLO EN UNA DIRECCIÓN */
+.flex--center-x {
+  display: flex;
+  justify-content: center;
+}
+
+.flex--center-y {
+  display: flex;
+  align-items: center;
+}
+
+/* ENVOLVER CONTENIDO */
+.flex--wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.flex--nowrap {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+/* GAP */
+.gap--xs {
+  gap: 0.25rem;
+}
+
+.gap--sm {
+  gap: 0.5rem;
+}
+
+.gap--md {
+  gap: 1rem;
+}
+
+.gap--lg {
+  gap: 1.5rem;
+}
+
+.gap--xl {
+  gap: 2rem;
+}
+
+/* ESPACIADO VERTICAL */
+.flex--col.gap--md > * + * {
+  margin-top: 1rem;
+}
+
+/* ALINEAR HACIA ARRIBA O ABAJO */
+.flex--top {
+  align-items: flex-start;
+}
+
+.flex--bottom {
+  align-items: flex-end;
+}
+
+/* ESTIRAR */
+.flex--stretch {
+  align-items: stretch;
+}
+
+/* RESPONSIVE HELPERS */
+@media (max-width: 768px) {
+  .flex--responsive {
+    flex-direction: column;
+  }
+}
+
 .mt-md {
   margin-top: var(--spacing-md);
 }
@@ -150,13 +273,13 @@ table {
   margin-bottom: var(--spacing-md);
 }
 
-.loader-container{
+.loader-container {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.loader-container .loader{
+.loader-container .loader {
   border: 2px solid #f3f3f3;
   border-top: 2px solid var(--color-primary);
   border-radius: 50%;

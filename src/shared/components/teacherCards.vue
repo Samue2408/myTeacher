@@ -25,7 +25,7 @@
 import { useRouter } from 'vue-router'
 const router = useRouter()
 defineProps({ teacher: Object })
-const goToTutoringProfile = id => router.push({ name: 'TutorProfile', params: { id } })
+const goToTutoringProfile = id => router.push({ name: 'profile', params: { id } })
 </script>
 
 <style scoped>
@@ -36,7 +36,6 @@ const goToTutoringProfile = id => router.push({ name: 'TutorProfile', params: { 
   background: #fff;
   border-radius: 16px;
   padding: 18px 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
   transition: transform .2s ease, box-shadow .2s ease;
 }
 .card:hover {
