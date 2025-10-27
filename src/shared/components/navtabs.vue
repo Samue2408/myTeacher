@@ -60,6 +60,7 @@ export default {
 
   .container-tabs {
     width: 100%;
+    min-height: 600px;
   }   
   
   .navtabs { 
@@ -107,6 +108,9 @@ export default {
 
 
   @media (max-width: 600px) {
+    .container-tabs {
+      min-height: 550px;
+    }
     .navtabs {     
       justify-content: start;
       gap: 10px;

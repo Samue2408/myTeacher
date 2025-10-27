@@ -5,6 +5,7 @@
     <sectionDescription />
   </div>
   <phrasesSection/>
+  <learnWithUs/>
 </template>
 
 <script setup>
@@ -12,6 +13,7 @@ import heroImage from "@/components/hero-image.vue";
 import sectionDescription from "@/components/section-description.vue";
 import StepByStep from "@/components/stepbystep.vue";
 import phrasesSection from "@/components/phrases-section.vue";
+import learnWithUs from "@/components/learnWithUs.vue";
 </script>
 
 

@@ -10,10 +10,10 @@
         <span>APRENDE,</span>
         <span>CRECE</span>
       </h1>
-      <span class="description"
-        >Diseñada para transformar la manera en que estudiantes y tutores se
-        conectan y comparten conocimiento</span
-      >
+      <span class="description">
+        Diseñada para transformar la manera en que estudiantes y tutores se
+        conectan y comparten conocimiento
+      </span>
       <div class="call-to-actions">
         <div class="action1"><button @click="goToSearch">Buscar tutores</button></div>
         <div class="action2"><button @click="goToLogIn">Ser Tutor</button></div>
@@ -214,7 +214,7 @@ canvas {
   }
 
   .hero .hero__title {
-    max-width: 600px;
+    max-width: 550px;
   }
   .hero .hero__title h1 {
     line-height: 1.4;

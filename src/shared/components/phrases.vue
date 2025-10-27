@@ -58,7 +58,9 @@ export default {
     width: 95%;
     margin-block: 30px;
     margin-inline: auto;
+    min-height: 145px;
 }
+
 
 .card figure {
     width: 40%;
@@ -181,6 +183,28 @@ export default {
     }
     .card .card-body .info .description {
         font-size: 18px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .card {
+        max-width: 900px;
+        padding: 22px;
+    }    
+    .card .card-body {
+        padding: 20px;
+    }
+    .card .card-body .quote {
+        font-size: 45px;
+    }
+    .card .card-body .phrase {
+        font-size: 35px;
+    }
+    .card .card-body .info .name {
+        font-size: 25px;
+    }
+    .card .card-body .info .description {
+        font-size: 20px;
     }
 }
 

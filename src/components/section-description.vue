@@ -10,7 +10,6 @@
 
 .section {
   width: 100%;
-  height: 100%;
   background-color: var(--color-primary);
   display: flex;
   flex-direction: column;
@@ -18,7 +17,7 @@
   justify-content: center;
   gap: 15px;
   margin-top: 50px;
-  padding: 18px;
+  padding: 35px 18px ;
 }
 
 .section h2{

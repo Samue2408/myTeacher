@@ -43,7 +43,6 @@ export default {
   }
 
   .tab-panel img {
-    display: none;
     height: 300px;
     margin-inline: auto;
     margin-top: 20px;
@@ -105,7 +104,6 @@ export default {
     }
 
     .tab-panel figure img {
-      display: block;
       height: 100%;
       max-height: 480px;
       width: 100%;
