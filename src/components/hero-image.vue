@@ -1,15 +1,23 @@
 <template>
   <main class="hero">
     <div class="hero__title">
+      <div class="subtitle">
+        <span >Plataforma de Tutorias</span>
+      </div>
+      
       <h1 class="title">
-        <span>CONECTA</span>
-        <span>APRENDE</span>
+        <span>CONECTA,</span>
+        <span>APRENDE,</span>
         <span>CRECE</span>
       </h1>
       <span class="description"
         >Diseñada para transformar la manera en que estudiantes y tutores se
         conectan y comparten conocimiento</span
       >
+      <div class="call-to-actions">
+        <div class="action1"><button @click="goToSearch">Buscar tutores</button></div>
+        <div class="action2"><button @click="goToLogIn">Ser Tutor</button></div>
+      </div>
     </div>
     <div class="hero__image">
       <img src="../assets/hero-image.png" alt="" />
@@ -17,7 +25,13 @@
   </main>
 </template>
 <script setup>
+import { useRouter } from "vue-router"
 
+const router = useRouter()
+const goToSearch = () => {
+  router.push({ path: "/search"})
+}
+const goToLogIn = () => router.push({ path: "/user/login" })
 </script>
 <style scoped>
 @import "../_global.css";
@@ -26,8 +40,12 @@ main {
   background: linear-gradient(
     180deg,
     rgba(83, 127, 213, 0.2) 0%,
-    rgba(249, 249, 249, 0.02) 100%
+    rgba(250, 250, 250, 0.02) 50%
   );
+}
+
+canvas {
+  display: block;
 }
 
 .hero {
@@ -50,6 +68,19 @@ main {
   gap: 20px;
 }
 
+.hero .hero__title .subtitle {
+  display: inline-block;
+  padding: 8px 12px;
+  background-color: rgba(255, 2555, 255, .7);
+  border-radius: 99px;
+}
+
+.hero .hero__title .subtitle span {
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
 .hero .hero__title h1 {
   display: flex;
   flex-direction: column;
@@ -57,9 +88,11 @@ main {
 }
 .hero .hero__title h1 span {
     font-size: clamp(3rem, 1vw, 4.5rem);
-    font-weight: 800;
+    font-weight: 800;    
     color: var(--color-primary);
-    animation: fadeIn 0.5s ease;
+    animation: fadeIn 0.5s ease forwards;
+    transform: translateX(-100px);
+    opacity: 0;
 }
 
 .hero .hero__title h1 span:first-of-type {
@@ -67,18 +100,18 @@ main {
 }
 
 .hero .hero__title h1 span:nth-of-type(2) {
-  animation-delay: 0s;
+  animation-delay: .1s;
 }
 
 .hero .hero__title h1 span:nth-of-type(3) {
-  animation-delay: 0s;
+  animation-delay: .15s;
 }
 
 .hero .hero__title .description {
   color: var(--color-muted);
   font-style: italic;
   font-size: 14px;
-  animation: fadeIn 0.5s ease;
+  animation: fadeIn 0.5s ease forwards;
 }
 
 .hero .hero__title .search {
@@ -113,11 +146,39 @@ main {
   cursor: pointer;
 }
 
+.hero .hero__title .call-to-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.hero .hero__title .call-to-actions .action1 {
+  padding: 9px 15px;
+  color: white;
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  margin-right: auto;
+}
+
+.hero .hero__title .call-to-actions .action2 {
+  padding: 9px 15px;
+  color: var(--color-primary);
+  background-color: #fff;
+  border-radius: 6px;
+  border: 1px solid var(--color-primary);
+  margin-right: auto;
+}
+
 .hero .hero__image {
   display: grid;
   place-items: center;
   margin-top: 50px;
   height: 40%;
+  filter: drop-shadow(4px 4px 10px rgba(0, 0, 0, 0.05));
 }
 
 .hero .hero__image img {
@@ -177,13 +238,17 @@ main {
     font-size: 16px;
   }
 
+  .hero .hero__title .call-to-actions {
+    font-size: 14px;
+  }
+
   .hero .hero__image {
     margin-top: 0;
     place-items: end;
   }
 
   .hero .hero__image img {
-    max-width: 80%;
+    max-width: 90%;
     height: auto;
   }
 

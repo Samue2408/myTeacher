@@ -1,6 +1,6 @@
 <template>
     <div class="section">
-        <h2>Aprender nunca fue tan fácil, rápido y a tu medida</h2>
+        <h2>Aprender nunca fue tan fácil, <span>rápido y a tu medida</span></h2>
         <sub>En cada paso verás como poder interactuar con nosotros</sub>
         <NavTabs :items="items" :nav-enabled="1"/>
     </div>
@@ -18,31 +18,31 @@ export default {
                     title: 'Registrate', 
                     title_content: 'Primero deberás registrar tu cuenta',
                     sub_content: 'En cada paso verás como poder interactuar con nosotros',
-                    img: '/img/stepbystep//primera.png',
+                    img: '/img/stepbystep/primera.png',
                     callToAction: 'Registrate'
                 },
                 { 
                     id: 2, 
                     title: 'Busca un  tutor', 
                     title_content: 'Explora los perfiles de nuestros tutores',
-                    sub_content: 'Podrás filtrar por materia, nivel académico y disponibilidad para encontrar al tutor ideal.',
-                    img: '/img/stepbystep//segunda.png',
+                    sub_content: 'Podrás filtrar por nivel de educación y más para encontrar al tutor ideal.',
+                    img: '/img/stepbystep/segunda.png',
                     callToAction: 'Buscar tutor'
                 },
                 { 
                     id: 3, 
                     title: 'Reserva tu clase', 
-                    title_content: 'Elige el horario que más se adapte a ti',
-                    sub_content: 'Confirma la reserva en pocos clics y asegura tu espacio con el tutor seleccionado.',
-                    img: '/img/stepbystep//primera.png',
+                    title_content: 'Elige él horario que más te sirva',
+                    sub_content: 'Confirma la reserva y asegura tu espacio con el tutor.',
+                    img: '/img/stepbystep/primera.png',
                     callToAction: 'Reservar ahora'
                 },
                 { 
                     id: 4, 
                     title: 'Asiste a tu clase', 
-                    title_content: 'Conéctate desde cualquier lugar o presencial',
-                    sub_content: 'Accede al aula virtual en la fecha y hora establecida para disfrutar de tu clase en tiempo real.',
-                    img: '/img/stepbystep//primera.png',
+                    title_content: 'Reúnete desde cualquier lugar',
+                    sub_content: 'Accede tu perfil para ver el link o dirección para disfrutar de tu clase.',
+                    img: '/img/stepbystep/primera.png',
                     callToAction: 'Ver mis clases'
                 }
             ]
@@ -64,20 +64,23 @@ export default {
     
     .section {
         width: 100%;
-        background-color: white;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 5px;
         overflow: hidden;
         padding-inline: 15px;
+        margin-top: 80px;
     }
 
     .section h2 {
-        color:  var(--color-primary);
         max-width: 50%;
         font-size: 27px;
         text-align: center;
+    }
+
+    .section h2 span {
+        color:  var(--color-primary);
     }
 
     .section sub{
@@ -105,8 +108,8 @@ export default {
             font-size: 24px;
         }
         .section sub{
-            font-size: 16px;
-            width: 70%;
+            font-size: 14px;
+            width: 85%;
         }
     }
 </style>

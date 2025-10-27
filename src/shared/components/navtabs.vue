@@ -11,9 +11,12 @@
           {{ item.title }}
         </nav>
       </div>
-      <transition name="slide" mode="out-in">
-        <Item v-if="currentItem" :key="currentItem.id" :item="currentItem" />
-      </transition>
+      <div>
+
+        <transition name="slide" mode="out-in">
+          <Item v-if="currentItem" :key="currentItem.id" :item="currentItem" />
+        </transition>
+      </div>
     </div>  
 </template>
 
@@ -66,7 +69,7 @@ export default {
     justify-content: center;
     margin: auto;
     gap: 19px;
-    margin-top: 48px;
+    margin-top: 30px;
     -webkit-mask-image: linear-gradient(90deg, #0000, #000 5% 95%, #0000);
     mask-image: linear-gradient(90deg, #0000, #000 5% 95%, #0000);
   }
@@ -99,40 +102,14 @@ export default {
     display: none; /* scroll horizontal fino */
   }
 
-  /* Slide hacia la derecha */
-  .slide-enter-active,
-  .slide-leave-active {
-    transition: all 0.3s ease;  
-    width: 100%;
-  }
-
-  .slide-enter-from {
-    opacity: 0;
-    transform: translateX(50px); /* entra desde la derecha */
-  }
-
-  .slide-enter-to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  .slide-leave-from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  .slide-leave-to {
-    opacity: 0;
-    transform: translateX(-50px); /* sale hacia la izquierda */
-  }
+  
   
 
 
   @media (max-width: 600px) {
     .navtabs {     
       justify-content: start;
-      gap: 10px;   
-      margin-top: 30px;
+      gap: 10px;
       padding-inline: 10px;
     }    
   } 

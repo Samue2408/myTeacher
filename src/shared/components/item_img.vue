@@ -27,8 +27,8 @@ export default {
 
 <style scoped>
   .tab-panel {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     align-items: center;
     justify-content: space-between;
     background: linear-gradient(
@@ -43,7 +43,9 @@ export default {
   }
 
   .tab-panel img {
+    display: none;
     height: 300px;
+    margin-inline: auto;
     margin-top: 20px;
     margin-bottom: 40px;
     border-radius: 29px;  
@@ -53,16 +55,17 @@ export default {
     padding: 30px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 18px;
     height: 100%;
   }
 
   .tab-panel .tab-panel-content .call-to-action {
-     padding: 9px 15px;
-      color: white;
-      background-color: var(--color-primary);
-      border-radius: 6px;
-      margin-right: auto;
+    padding: 9px 15px;
+    color: white;
+    background-color: var(--color-primary);
+    border-radius: 6px;
+    margin-right: auto;
   }
   
   .tab-panel .tab-panel-content h3 {
@@ -83,7 +86,7 @@ export default {
   @media (min-width: 600px) {
   
     .tab-panel {
-      flex-direction: row;
+      grid-template-columns: 60% 40%;
       position: relative;
       max-width: 1000px;
       margin-block: 50px;
@@ -92,18 +95,21 @@ export default {
     .tab-panel .tab-panel-content {
       padding-left: 65px;
       gap: 30px;
+      max-width: 575px;
     }
 
     .tab-panel figure{
       margin: 0;
       padding: 0;
-      width: 50%;
       height: 100%;
     }
 
     .tab-panel figure img {
+      display: block;
       height: 100%;
+      max-height: 480px;
       width: 100%;
+      
       margin: 0;
     }
 
