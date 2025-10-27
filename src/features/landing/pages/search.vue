@@ -41,6 +41,7 @@
                 v-model="filters.education"
               />
               <span class="material-icons-outlined icon">{{ range.icon }}</span>
+              <span class="material-icons-outlined icon-checked">check</span>
               <span>{{ range.label }}</span>
             </label>
           </div>
@@ -185,16 +186,14 @@ main {
 }
 
 .chip {
-  border: 1px solid #e2e6ff;
-  color: #333;
-  font-weight: 200;
+  border: 1px solid #EEEEEE;
   border-radius: 20px;
   padding: 8px 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #f5f7ff;
+  background: #fff;
   transition: all 0.2s ease;
 }
 
@@ -206,15 +205,40 @@ main {
   pointer-events: none;
   font-weight: 300;
   transition: 0.5s ease;
+  color: #616161;
+  font-weight: 400;
+}
+.chip .icon-checked {
+  display: none;
+  opacity: 0;
+  background-color: var(--color-primary);
+  border-radius: 99px;
+  padding: 2px;
+  font-size: 15px;
 }
 
 .chip:hover {
   background: #ebf0ff;
 }
 
-.chip input:checked ~ span {
-  color: var(--color-primary);
+.chip:has(input:checked) {
+  box-shadow: 1px 1px 2px 0 rgba(0,0,0,0.16);
+  border: 1.2px solid #EEEEEE;
+
 }
+.chip input:checked ~ span {
+  color: #060606;
+}
+
+.chip input:checked ~ .icon {
+  display: none;
+}
+.chip input:checked ~ .icon-checked {
+  display: block;
+  opacity: 1;
+  color: #fff;
+}
+
 
 .tabs {
   position: relative;

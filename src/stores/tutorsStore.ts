@@ -17,7 +17,7 @@ export const useTutorsStore = defineStore('tutors', {
 
       try {
         // Simulando retraso como si fuera un fetch real
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise(resolve => setTimeout(resolve, 2000))
 
         // const res = await axios.get('/api/tutors')
         // this.tutors = res.data
