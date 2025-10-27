@@ -65,7 +65,7 @@
             </div>
           </label>
 
-          <button class="btn-pay">Pay | $1,220.80</button>
+          <button v-if="tutor" class="btn-pay">Pagar | ${{ tutor.price ?? '0'}}</button>
           <p class="terms">
             By clicking this, I agree to Treva
             <a href="#">Terms & Conditions</a> and
@@ -74,46 +74,40 @@
         </div>
       </div>
 
-      <div class="payment-right">
+      <div class="payment-right" v-if="tutor">
         <div class="booking-summary">
           <div class="tutor-info">
-            <img
-              src="https://randomuser.me/api/portraits/men/32.jpg"
-              alt="Tutor"
-            />
+            <img :src="tutor.img" alt="Tutor" />
             <div>
               <div class="flex gap--md flex--center-y flex--between">
-                <h4>Juan Pérez</h4>
-                <p>Fecha: 30 Oct 2025 - 4:00 PM</p>
+                <h4>{{ tutor.name }}</h4>
+                <p>Fecha: {{ tutor.date }}</p>
               </div>
-              <p>Materia: Matemáticas avanzadas</p>
-              <p>Duración: 1 hora</p>
+              <p>Materia: {{ tutor.subject }}</p>
             </div>
           </div>
           <p class="note">
             Al confirmar tu pago, reservarás esta sesión con
-            <strong>Juan Pérez</strong>. Si necesitas reprogramar, podrás
-            hacerlo desde tu panel.
+            <strong>{{ tutor.name }}</strong
+            >. Si necesitas reprogramar, podrás hacerlo desde tu panel.
           </p>
         </div>
         <div class="order-summary">
           <div class="summary-row">
             <span>Subtotal</span>
-            <span>$1,120.00</span>
-          </div>
-          <div class="summary-row">
-            <span>Shipping</span>
-            <span>Free</span>
-          </div>
-          <div class="summary-row">
-            <span>Tax</span>
-            <span>$100.80</span>
+            <span>${{ tutor.price }}</span>
           </div>
           <div class="summary-row total">
             <span>Total</span>
-            <span>$1,220.80</span>
+            <span>${{ tutor.price }}</span>
           </div>
         </div>
+      </div>
+
+      <div v-else class="payment-right">
+        <p style="text-align: center; color: #888">
+          No hay tutor seleccionado. Regresa y elige uno para continuar.
+        </p>
       </div>
     </div>
   </div>
@@ -367,4 +361,16 @@
 }
 </style>
 
-<script setup></script>
+<script setup>
+import { ref, onMounted } from "vue";
+
+const tutor = ref(null);
+
+onMounted(() => {
+  const tutorSaved = localStorage.getItem("tutorReserva");
+
+  if (tutorSaved) {
+    tutor.value = JSON.parse(tutorSaved);
+  }
+});
+</script>

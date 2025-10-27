@@ -46,39 +46,57 @@
     </div>
 
     <div class="nav__buttons">
-      <div><button>Registrarme</button></div>
-      <div><button @click="goToLogIn">Iniciar sesión</button></div>
+      <div v-if="auth.isAuthenticated">
+        <button @click="goToBookins">Mis reservas</button>
+        <div class="nav__profile">
+          <img :src="user.image" alt="Perfil" @click="goToProfile" />
+        </div>
+      </div>
+
+      <div v-else>
+        <button class="btn-sign__up">Registrarme</button>
+        <button class="btn-sign__in" @click="goToLogIn">Iniciar sesión</button>
+      </div>
     </div>
   </nav>
 </template>
 
 <script setup>
-import { useRouter } from "vue-router"
-import { ref } from "vue"
-import SearchBar from "@/shared/components/searchBar.vue"
+import { useRouter } from "vue-router";
+import { ref } from "vue";
+import SearchBar from "@/shared/components/searchBar.vue";
+import { useAuthStore } from "@/stores/authStore";
+import { useUser } from "@/stores/userStore";
+const user = useUser()
 
-const router = useRouter()
-const loading = ref(false)
-const results = ref([])
-const isOpen = ref(false)
-const showSearch = ref(false)
+const goToProfile = () => router.push({ path: `/profile/${user.$id}` })
+
+const auth = useAuthStore();
+
+const router = useRouter();
+const loading = ref(false);
+const results = ref([]);
+const isOpen = ref(false);
+const showSearch = ref(false);
 
 const handleSearch = (query) => {
   if (!query) {
-    results.value = []
-    return
+    results.value = [];
+    return;
   }
-  loading.value = true
-  setTimeout(() => (loading.value = false), 600)
-}
+  loading.value = true;
+  setTimeout(() => (loading.value = false), 600);
+};
 
-const goToHome = () => router.push({ path: "/" })
+const goToHome = () => router.push({ path: "/" });
+const goToBookins = () => router.push({ path: "/bookings" });
+
 const goToSearch = (q) => {
-  if (!q || !q.trim()) return
-  router.push({ path: "/search", query: { q } })
-}
-const goToLogIn = () => router.push({ path: "/user/login" })
-const toggleSearch = () => (showSearch.value = !showSearch.value)
+  if (!q || !q.trim()) return;
+  router.push({ path: "/search", query: { q } });
+};
+const goToLogIn = () => router.push({ path: "/user/login" });
+const toggleSearch = () => (showSearch.value = !showSearch.value);
 </script>
 
 <style>
@@ -201,6 +219,22 @@ const toggleSearch = () => (showSearch.value = !showSearch.value)
   display: none;
 }
 
+.nav__profile {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+.nav__profile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
 @media (min-width: 1024px) {
   .nav {
     gap: 20px;
@@ -222,6 +256,11 @@ const toggleSearch = () => (showSearch.value = !showSearch.value)
     gap: 10px;
   }
 
+  .nav__buttons div{
+    display: flex;
+    gap: 10px;
+  }
+
   .nav__buttons div button {
     padding: 8px 15px;
     border-radius: 4px;
@@ -231,7 +270,7 @@ const toggleSearch = () => (showSearch.value = !showSearch.value)
     transition: all 0.3s ease;
   }
 
-  .nav__buttons div:first-of-type button {
+  .nav__buttons .btn-sign__up {
     background-color: white;
     color: var(--color-primary);
   }

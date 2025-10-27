@@ -16,17 +16,14 @@
           <label>Materia</label>
           <p>{{ tutor.subject }}</p>
         </div>
+        
         <div class="info-item">
           <label>Nivel</label>
           <p>{{ tutor.description }}</p>
         </div>
         <div class="info-item">
-          <label>Correo institucional</label>
-          <p>{{ tutor.workEmail }}</p>
-        </div>
-        <div class="info-item">
           <label>Correo personal</label>
-          <p>{{ tutor.privateEmail }}</p>
+          <p>{{ tutor.email }}</p>
         </div>
         <div class="info-item">
           <label>Teléfono</label>
@@ -180,9 +177,8 @@ onMounted(async () => {
   tutor.value = tutorsStore.getTutorById(id) || {};
   tutor.value = {
     ...tutor.value,
-    workEmail: "amccoy@virtuslab.com",
-    privateEmail: "arlene.mccoy@gmail.com",
-    phone: "+57 320 555 7788",
+    email: tutor.value.email,
+    phone: tutor.value.phone,
     status: "Disponible",
     created: "February 24, 2023",
     updated: "October 20, 2025",

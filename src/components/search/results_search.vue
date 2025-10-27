@@ -51,10 +51,17 @@
           <h2 class="name-main">{{ selectedTeacher.name }}</h2>
 
           <div class="header-actions">
-            <button class="btn-primary" @click="redirectPayment()">
+            <button
+              class="btn-primary"
+              :disabled="!startDate"
+              @click="redirectPayment()"
+            >
               Reservar clase
             </button>
-            <button class="btn-ghost">Ver perfil</button>
+
+            <button class="btn-ghost" @click="redirectProfile">
+              Ver perfil
+            </button>
           </div>
         </div>
       </header>
@@ -133,41 +140,56 @@ export default {
       teachers: [
         {
           id: 1,
-          name: "Gabriela Dujardin",
-          description: "Educación superior",
+          name: "Laura Gómez",
+          description: "Educación Superior",
           subject: "Matemáticas",
           price: 35000,
           img: "https://randomuser.me/api/portraits/women/44.jpg",
-          provider: "YETS54",
-          email: "gabriela.dujardin@gmail.com",
-          phone: "+57 310 555 4433",
-          status: "Pendiente de contacto",
+          phone: "+57 310 458 9276",
+          email: "laura.gomez@teacher.com",
         },
         {
           id: 2,
-          name: "Fabrice Edouard",
+          name: "Carlos Ramírez",
           description: "Secundaria",
           subject: "Física",
           price: 40000,
-          img: "https://randomuser.me/api/portraits/men/36.jpg",
-          provider: "LBC678",
-          email: "fabrice@example.com",
-          phone: "+57 320 334 2211",
-          status: "Interesado",
+          img: "https://randomuser.me/api/portraits/men/32.jpg",
+          phone: "+57 301 722 6435",
+          email: "carlos.ramirez@teacher.com",
         },
         {
           id: 3,
-          name: "Mehdi Lerille",
+          name: "Ana Torres",
           description: "Primaria",
-          subject: "Lengua Castellana",
+          subject: "Lengua y Literatura",
           price: 30000,
-          img: "https://randomuser.me/api/portraits/men/32.jpg",
-          provider: "LBC678",
-          email: "mehdi@example.com",
-          phone: "+57 311 777 8899",
-          status: "Solicitó contacto",
+          img: "https://randomuser.me/api/portraits/women/68.jpg",
+          phone: "+57 315 839 2471",
+          email: "ana.torres@teacher.com",
+        },
+        {
+          id: 4,
+          name: "Julián Pérez",
+          description: "Primaria",
+          subject: "Informática",
+          price: 45000,
+          img: "https://randomuser.me/api/portraits/men/12.jpg",
+          phone: "+57 316 204 5539",
+          email: "julian.perez@teacher.com",
+        },
+        {
+          id: 5,
+          name: "Sofía Hernández",
+          description: "Educación Superior",
+          subject: "Inglés",
+          price: 38000,
+          img: "https://randomuser.me/api/portraits/women/26.jpg",
+          phone: "+57 320 994 3178",
+          email: "sofia.hernandez@teacher.com",
         },
       ],
+
       startDate: null,
       endDate: null,
       today: new Date(),
@@ -183,21 +205,52 @@ export default {
     redirectPayment() {
       this.$router.push("/payment");
     },
+
+    redirectProfile() {
+      this.$router.push(`/profile/${this.selectedTeacher?.id}`);
+    },
+
     copyEmail(email) {
       navigator.clipboard?.writeText(email).then(() => {
         alert("Correo copiado: " + email);
       });
     },
     onDateSelected(date) {
+      // Acá validamos que sino hay fecha de inicio o ya hay un rango completo, reinicia
       if (!this.startDate || (this.startDate && this.endDate)) {
         this.startDate = date;
         this.endDate = null;
-      } else if (this.startDate && !this.endDate && date > this.startDate) {
+      }
+      // En este bloque si ya hay inicio y la nueva es después, define el fin
+      else if (this.startDate && !this.endDate && date > this.startDate) {
         this.endDate = date;
-      } else {
+      }
+
+      // Si la nueva es antes, se reinicia
+      else {
         this.startDate = date;
         this.endDate = null;
       }
+
+      const formattedDate = this.startDate.toLocaleDateString("es-CO", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      });
+
+      const tutorInfo = {
+        id: this.selectedTeacher.id,
+        name: this.selectedTeacher.name,
+        subject: this.selectedTeacher.subject,
+        description: this.selectedTeacher.description,
+        price: this.selectedTeacher.price,
+        img: this.selectedTeacher.img,
+        email: this.selectedTeacher.email,
+        phone: this.selectedTeacher.phone,
+        date: formattedDate,
+      };
+
+      localStorage.setItem("tutorReserva", JSON.stringify(tutorInfo));
     },
   },
 };
@@ -402,6 +455,13 @@ export default {
   cursor: pointer;
   font-weight: 700;
 }
+
+.btn-primary:disabled {
+  background: #cdd2f9;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .btn-ghost {
   background: transparent;
   border: 1px solid #e6e9f6;

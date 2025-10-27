@@ -4,6 +4,7 @@ import authRoutes from "./routes/auth.routes";
 import profile from "./routes/profile.routes";
 import { useAuthStore } from "../stores/authStore";
 import payment from "./routes/payment.routes";
+import bookings from "./routes/bookings.routes";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,7 +31,12 @@ const router = createRouter({
       children: [...payment],
       meta: { requiresAuth: true },
     },
-
+    {
+      path: "/bookings",
+      component: () => import("@/layouts/MainLayout.vue"),
+      children: [...bookings],
+      meta: { requiresAuth: true },
+    },
     {
       path: "/:pathMatch(.*)*",
       redirect: "/",
