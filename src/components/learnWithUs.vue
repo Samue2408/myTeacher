@@ -68,10 +68,8 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 15px;
-  margin-top: 60px;
+  margin-block: 20px;
   padding: 18px;
-  max-width: 1200px;
-  margin-inline: auto;
 }
 
 .section h2 {
@@ -84,19 +82,21 @@ export default {
     color:  var(--color-primary);
 }
 
-.section .learnWithUs-content ul {
+.section .learnWithUs-contentn article ul {
     width: 80%;
     margin-inline: auto;
 }
 
-.section .learnWithUs-content ul li {
+.section .learnWithUs-content article ul li {
     margin-block: 15px;
     display: flex;
-    align-items: center;
+    align-items: start;
     gap: 12px;
+    font-size: 16px;
+
 }
 
-.section .learnWithUs-content ul li span {
+.section .learnWithUs-content article ul li span {
     color: #0a8e0a;
 }
 
@@ -108,6 +108,9 @@ export default {
 
 
 @media (min-width: 375px) {
+    .section {
+        margin-top: 70px;
+    }
 }
 
 @media (min-width: 425px) {
@@ -116,7 +119,12 @@ export default {
     }
 }
 @media (min-width: 550px) {
-    
+    .section h2 {
+        font-size: 35px;
+    }
+    .section .learnWithUs-content article{
+        max-width: 600px;
+    }
 }
 
 @media (min-width: 768px) {
@@ -130,11 +138,11 @@ export default {
         margin-bottom: 25px;
     }
 
-    .section .learnWithUs-content ul {
+    .section .learnWithUs-content article ul {
         width: 80%;
         margin-inline: 12px 0;
     }
-    .section .learnWithUs-content ul li {
+    .section .learnWithUs-content article ul li {
         gap: 18px;
     }
 
@@ -145,13 +153,19 @@ export default {
 }
 
 @media (min-width: 1024px){
+    .section {
+        margin-block: 90px;
+        max-width: 1200px;
+        margin-inline: auto;
+    }
     .section h2 {
         font-size: 37px;
         margin-bottom: 35px;
     }
 
-    .section .learnWithUs-content ul li {
-        font-size: 19px;
+    .section .learnWithUs-content article ul li {
+        gap: 22px;
+        font-size: 20px;
     }
 }
 

@@ -36,12 +36,13 @@ const goToLogIn = () => router.push({ path: "/user/login" })
 <style scoped>
 @import "../_global.css";
 
-main {
+main {  
   background: linear-gradient(
-    180deg,
-    rgba(83, 127, 213, 0.2) 0%,
-    rgba(250, 250, 250, 0.02) 50%
-  );
+      180deg,
+      rgb(83, 126, 213) 0%,
+      rgba(83, 127, 213, 0.2) 15%,
+      var(--color-bg) 30%
+    );
 }
 
 canvas {
@@ -70,8 +71,8 @@ canvas {
 
 .hero .hero__title .subtitle {
   display: inline-block;
-  padding: 8px 12px;
-  background-color: rgba(255, 2555, 255, .7);
+  padding: 6px 12px;
+  background-color: #fff;
   border-radius: 99px;
 }
 
@@ -162,15 +163,24 @@ canvas {
   border: 1px solid var(--color-primary);
   border-radius: 6px;
   margin-right: auto;
+  cursor: pointer;
+
 }
 
 .hero .hero__title .call-to-actions .action2 {
   padding: 9px 15px;
-  color: var(--color-primary);
-  background-color: #fff;
+  color: var(--color-white);
+  background-color: #08B294;
   border-radius: 6px;
-  border: 1px solid var(--color-primary);
+  border: 1px solid #08B294;
   margin-right: auto;
+  cursor: pointer;
+}
+
+.hero .hero__title .call-to-actions div:hover {
+  transform: translate(-2px, -1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
 }
 
 .hero .hero__image {
@@ -198,6 +208,15 @@ canvas {
 }
 
 @media (min-width: 600px) {
+  main {  
+    background: linear-gradient(
+        180deg,
+        rgb(83, 126, 213) 0%,
+        rgba(83, 127, 213, 0.2) 35%,
+
+        var(--color-bg) 95%
+      );
+  }
   .hero {
     padding-inline: 80px;
     display: flex;
@@ -225,8 +244,6 @@ canvas {
   }
 
   .hero .hero__title .description {
-    color: var(--color-muted);
-    font-style: italic;
     font-size: 16px;
   }
 
