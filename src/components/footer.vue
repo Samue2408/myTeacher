@@ -110,6 +110,7 @@
   text-decoration: none;
   font-size: 0.9rem;
   transition: opacity 0.3s ease;
+  
 }
 
 .footer__links a:hover,
