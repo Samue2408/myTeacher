@@ -15,8 +15,8 @@
         conectan y comparten conocimiento
       </span>
       <div class="call-to-actions">
-        <div class="action1"><button @click="goToSearch">Buscar tutores</button></div>
-        <div class="action2"><button @click="goToLogIn">Ser Tutor</button></div>
+        <div class="action1" @click="goToSearch"><button >Buscar tutores</button></div>
+        <div class="action2" @click="goToRegister"><button>Ser Tutor</button></div>
       </div>
     </div>
     <div class="hero__image">
@@ -31,7 +31,7 @@ const router = useRouter()
 const goToSearch = () => {
   router.push({ path: "/search"})
 }
-const goToLogIn = () => router.push({ path: "/user/login" })
+const goToRegister = () => router.push({ path: "/user/signup" })
 </script>
 <style scoped>
 @import "../_global.css";
@@ -160,7 +160,7 @@ canvas {
   padding: 9px 15px;
   color: white;
   background-color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   border-radius: 6px;
   margin-right: auto;
   cursor: pointer;
@@ -169,10 +169,9 @@ canvas {
 
 .hero .hero__title .call-to-actions .action2 {
   padding: 9px 15px;
-  color: var(--color-white);
-  background-color: #08B294;
+  color:  #08B294;
   border-radius: 6px;
-  border: 1px solid #08B294;
+  border: 1.5px solid #08B294;
   margin-right: auto;
   cursor: pointer;
 }

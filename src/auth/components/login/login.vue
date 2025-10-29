@@ -2,7 +2,7 @@
   <main class="login">
 
     <aside class="login-forms">
-      <form action="" class="form">
+      <form  @submit.prevent="handleLogin" class="form">
         <header class="form-header">
           <h1 class="form--title">Iniciar sesión</h1>
           <span class="form--description"
@@ -42,8 +42,8 @@
         </div>
 
         <!-- Submit -->
-        <button class="form-submit" type="submit" href="/">
-          Iniciar sesión
+        <button :disabled="loading" class="form-submit" type="submit" >
+          Iniciar sesión {{ loading }}
         </button>
       </form>
     </aside>
@@ -53,6 +53,13 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import inputDefault from "../../../shared/components/input.vue";
+import { useAuthStore } from '@/stores/authStore'
+import { useRouter } from "vue-router";
+
+const auth = useAuthStore();
+const router = useRouter();
+
+const loading = auth.loading
 
 // Controllers
 const email = ref("");
@@ -83,6 +90,11 @@ const slides = ref([
 
 const currentIndex = ref(0);
 let interval: number | undefined;
+
+async function handleLogin() {
+  await auth.login({ email: email.value, password: password.value })
+  router.push({path: '/'})
+}
 
 onMounted(() => {
   interval = window.setInterval(() => {

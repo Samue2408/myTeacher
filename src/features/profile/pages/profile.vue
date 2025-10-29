@@ -32,6 +32,8 @@
       </div>
 
       <button class="outline">Ver todos los campos</button>
+
+      <button @click="handleLogout">Cerrar Sesión</button>
     </aside>
 
     <main class="main">
@@ -133,6 +135,9 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useTutorsStore } from "@/stores/tutorsStore";
 import { storeToRefs } from "pinia";
+import { useAuthStore } from "@/stores/authStore";
+
+const auth = useAuthStore()
 
 const route = useRoute();
 const router = useRouter();
@@ -170,6 +175,10 @@ const documents = ref([
 ]);
 
 const goBack = () => router.back();
+function handleLogout() {
+  auth.logout()
+  router.push({path: '/'})
+}
 
 onMounted(async () => {
   if (!tutors.value.length) await tutorsStore.fetchTutors();
