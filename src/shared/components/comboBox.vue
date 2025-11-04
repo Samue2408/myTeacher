@@ -66,7 +66,7 @@ onMounted(() => document.addEventListener("click", handleClickOutside));
 onBeforeUnmount(() => document.removeEventListener("click", handleClickOutside));
 </script>
 
-<style scoped>
+<style>
 .combo-box {
   position: relative;
   width: 100%;

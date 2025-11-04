@@ -3,6 +3,25 @@ export interface LoginCredentials {
     password: string
 }
 
+
+// SIGN UP
+export interface LocationData {
+  city: string
+  country: string
+}
+
+export interface SignUpPayload {
+  name: string
+  email: string
+  password: string
+  role: 'student' | 'teacher' | 'admin' | string
+  phone?: string
+  location?: LocationData
+}
+
+
+
+
 export interface RegisterData {
     name: string
     email: string
@@ -20,3 +39,5 @@ export interface AuthResponse {
     user: User
     token: string
 }
+
+

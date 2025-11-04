@@ -1,16 +1,14 @@
 <template>
   <main class="login">
-
     <aside class="login-forms">
-      <form  @submit.prevent="handleLogin" class="form">
+      <form @submit.prevent="handleLogin" class="form">
         <header class="form-header">
           <h1 class="form--title">Iniciar sesión</h1>
-          <span class="form--description"
-            >Ingresa tus credenciales para poder acceder</span
-          >
+          <span class="form--description">
+            Ingresa tus credenciales para poder acceder
+          </span>
         </header>
 
-        <!-- Input email -->
         <div class="user-name">
           <inputDefault
             v-model="email"
@@ -20,7 +18,6 @@
           />
         </div>
 
-        <!-- Input password -->
         <div class="password">
           <inputDefault
             v-model="password"
@@ -41,9 +38,11 @@
           </footer>
         </div>
 
-        <!-- Submit -->
-        <button :disabled="loading" class="form-submit" type="submit" >
-          Iniciar sesión {{ loading }}
+        <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
+
+        <button :disabled="loading" class="form-submit" type="submit">
+          <span v-if="!loading">Iniciar sesión</span>
+          <span v-else class="loader"></span>
         </button>
       </form>
     </aside>
@@ -51,49 +50,72 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import inputDefault from "../../../shared/components/input.vue";
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
 
 const auth = useAuthStore();
 const router = useRouter();
 
-const loading = auth.loading
-
-// Controllers
 const email = ref("");
 const password = ref("");
+const loading = ref(false);
+const errorMsg = ref<string | null>(null);
 
 const passwordType = ref<"text" | "password">("password");
 const showPassword = ref(false);
 
+// 👁️ Cambia tipo de input según checkbox
 watch(showPassword, (value) => {
   passwordType.value = value ? "text" : "password";
 });
 
-// Slides
+// 📸 Slides (sin cambios, solo limpieza)
 const slides = ref([
-  {
-    img: "/public/img/auth/meet-virtual.jpg",
-    text: "¡Cumple tus sueños de estudiar!",
-  },
-  {
-    img: "/public/img/auth/videolecture.png",
-    text: "Clases virtuales de alta calidad",
-  },
-  {
-    img: "/public/img/auth/virtual-class.jpg",
-    text: "Aprende a tu propio ritmo",
-  },
+  { img: "/public/img/auth/meet-virtual.jpg", text: "¡Cumple tus sueños de estudiar!" },
+  { img: "/public/img/auth/videolecture.png", text: "Clases virtuales de alta calidad" },
+  { img: "/public/img/auth/virtual-class.jpg", text: "Aprende a tu propio ritmo" },
 ]);
 
 const currentIndex = ref(0);
 let interval: number | undefined;
 
 async function handleLogin() {
-  await auth.login({ email: email.value, password: password.value })
-  router.push({path: '/'})
+  errorMsg.value = null;
+
+  if (!email.value || !password.value) {
+    errorMsg.value = "Por favor ingresa tu correo y contraseña";
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email.value)) {
+    errorMsg.value = "El correo ingresado no es válido";
+    return;
+  }
+
+  try {
+    loading.value = true;
+
+    const user = {
+      email: email.value,
+      password: password.value
+    }
+
+    await auth.login(user);
+
+    if (auth.token) {
+      router.push({ path: "/" });
+    } else {
+      errorMsg.value = "Credenciales incorrectas";
+    }
+  } catch (err: any) {
+    console.error("Error en login:", err);
+    errorMsg.value = err.response?.data?.message || "No se pudo iniciar sesión. Intenta de nuevo más tarde.";
+  } finally {
+    loading.value = false;
+  }
 }
 
 onMounted(() => {
