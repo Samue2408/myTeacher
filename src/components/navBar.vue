@@ -96,6 +96,7 @@ const goToBookins = () => router.push({ path: "/bookings" });
 const goToSearch = (q) => {
   if (!q || !q.trim()) return;
   router.push({ path: "/search", query: { q } });
+  window.localStorage.setItem("query", q);
 };
 const goToLogIn = () => router.push({ path: "/user/login" });
 const toggleSearch = () => (showSearch.value = !showSearch.value);

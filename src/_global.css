@@ -19,6 +19,14 @@
 
   --color-gray: rgb(167, 167, 167);
 
+  --gray-100: #f5f6f7;
+  --gray-300: #e1e1e1;
+  --gray-600: #555;
+  --gray-800: #222;
+  --yellow-100: #fff3cd;
+  --blue-100: #cce5ff;
+  --radius: 14px;
+
   /* Tipografía */
   --font-family-base: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -288,34 +296,33 @@ table {
   animation: spin 1s linear infinite;
 }
 
-
 /* Slide hacia la derecha */
-  .slide-enter-active {
-    transition: all 0.4s ease;  
-    transition-delay: 100ms;
-    width: 100%;
-  }
-  .slide-leave-active {
-    transition: all 0.3s ease;  
-    width: 100%;
-  }
+.slide-enter-active {
+  transition: all 0.4s ease;
+  transition-delay: 100ms;
+  width: 100%;
+}
+.slide-leave-active {
+  transition: all 0.3s ease;
+  width: 100%;
+}
 
-  .slide-enter-from {
-    opacity: 0;
-    transform: translateX(100px); /* entra desde la derecha */
-  }
+.slide-enter-from {
+  opacity: 0;
+  transform: translateX(100px); /* entra desde la derecha */
+}
 
-  .slide-enter-to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.slide-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
 
-  .slide-leave-from {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.slide-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
 
-  .slide-leave-to {
-    opacity: 0;
-    transform: translateX(-100px); /* sale hacia la izquierda */
-  }
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(-100px); /* sale hacia la izquierda */
+}

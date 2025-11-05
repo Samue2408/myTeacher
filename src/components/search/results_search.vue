@@ -66,7 +66,24 @@
         </div>
       </header>
 
-      <section class="contact-info">
+      <nav class="tabs">
+        <button
+          class="tab"
+          @click="selectTab('information')"
+          :class="{ active: selectedTab == 'information' }"
+        >
+          Información
+        </button>
+        <button
+          class="tab"
+          @click="selectTab('availability')"
+          :class="{ active: selectedTab == 'availability' }"
+        >
+          Horario de Disponibilidad
+        </button>
+      </nav>
+
+      <section class="contact-info" v-if="selectedTab == 'information'">
         <div class="left-col">
           <div class="info-item">
             <span class="label">Disponibilidad</span>
@@ -99,22 +116,25 @@
         <div class="right-col">
           <div class="calendar-section">
             <CalendarMonth
-              :month="today.getMonth()"
-              :year="today.getFullYear()"
-              :startDate="startDate"
-              :endDate="endDate"
+              :tooltips="{
+                '2025-11-04': 'Evento importante',
+                '2025-11-05': 'Entrega de proyecto',
+              }"
               @dateSelected="onDateSelected"
             />
           </div>
         </div>
       </section>
 
-      <nav class="tabs">
-        <button class="tab active">Expediente</button>
-        <button class="tab">Historial</button>
-        <button class="tab">Cuestionario</button>
-        <button class="tab">Citas</button>
-      </nav>
+      <div class="calendar-availability" v-if="selectedTab == 'availability'">
+        <ScheduleView
+          :availabilities="tutorAvailabilities"
+          :highlightedDates="['2025-03-14', '2025-03-18']"
+          tutor-id="6712abf4e5a01cc4c8a61b09"
+          view-mode="week"
+          start-date="2025-03-11"
+        />
+      </div>
     </main>
 
     <main class="crm-detail empty" v-else>
@@ -127,11 +147,13 @@
 
 <script>
 import CalendarMonth from "@/shared/components/CalendarMonth.vue";
+import ScheduleView from "@/shared/components/ScheduleView.vue";
 
 export default {
   name: "CrmCombined",
   components: {
     CalendarMonth,
+    ScheduleView,
   },
   data() {
     return {
@@ -193,6 +215,45 @@ export default {
       startDate: null,
       endDate: null,
       today: new Date(),
+      selectedTab: "information",
+      tutorAvailabilities: [
+        {
+          _id: "a1",
+          tutorId: "6712abf4e5a01cc4c8a61b09",
+          date: "2025-03-11",
+          startTime: "08:00",
+          endTime: "12:00",
+          isRecurring: false,
+          active: true,
+        },
+        {
+          _id: "a2",
+          tutorId: "6712abf4e5a01cc4c8a61b09",
+          date: "2025-03-14",
+          startTime: "14:00",
+          endTime: "18:00",
+          isRecurring: false,
+          active: true,
+        },
+        {
+          _id: "a3",
+          tutorId: "6712abf4e5a01cc4c8a61b09",
+          dayOfWeek: "Monday",
+          startTime: "09:00",
+          endTime: "11:00",
+          isRecurring: true,
+          active: true,
+        },
+        {
+          _id: "a4",
+          tutorId: "6712abf4e5a01cc4c8a61b09",
+          dayOfWeek: "Wednesday",
+          startTime: "13:00",
+          endTime: "17:00",
+          isRecurring: true,
+          active: false, 
+        },
+      ],
     };
   },
   mounted() {
@@ -208,6 +269,10 @@ export default {
 
     redirectProfile() {
       this.$router.push(`/profile/${this.selectedTeacher?.id}`);
+    },
+
+    selectTab(tab) {
+      this.selectedTab = tab;
     },
 
     copyEmail(email) {
