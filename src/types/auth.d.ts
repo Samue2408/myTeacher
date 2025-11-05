@@ -28,11 +28,10 @@ export interface RegisterData {
     password: string
 }
 
-export interface User {
-    id: number
-    name: string
+export interface TokenUser {
+    id: string
+    role: string
     email: string
-    role?: string
 }
 
 export interface AuthResponse {

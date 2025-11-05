@@ -2,7 +2,7 @@
   <nav class="nav">
     <h1 @click="goToHome" class="nav__title">
       <span>MT</span>
-      myTeacher
+      myTEACHER
     </h1>
 
     <div class="nav__actions">
@@ -48,8 +48,10 @@
     <div class="nav__buttons">
       <div v-if="auth.isAuthenticated">
         <button @click="goToBookins">Mis reservas</button>
-        <div class="nav__profile">
-          <img :src="user.image" alt="Perfil" @click="goToProfile" />
+        <div class="nav__profile" @click="goToProfile">
+        
+          <img v-if="user.currentUser.image" :src="user.currentUser.image" alt="Perfil" />
+          <div v-else class="avatar"><span>{{ user.currentUser.name[0] }}</span></div>
         </div>
       </div>
 
@@ -66,10 +68,10 @@ import { useRouter } from "vue-router";
 import { ref } from "vue";
 import SearchBar from "@/shared/components/searchBar.vue";
 import { useAuthStore } from "@/stores/authStore";
-import { useUser } from "@/stores/userStore";
-const user = useUser()
+import { useUserStore } from "@/stores/userStore";
+const user = useUserStore()
 
-const goToProfile = () => router.push({ path: `/profile/${user.$id}` })
+const goToProfile = () => router.push({ path: `/profile/${user.currentUser._id}` })
 
 const auth = useAuthStore();
 
@@ -226,12 +228,28 @@ const toggleSearch = () => (showSearch.value = !showSearch.value);
   overflow: hidden;
   cursor: pointer;
   border: 2px solid white;
+  background-color: #08B294;
 }
 
 .nav__profile img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.nav__profile .avatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav__profile .avatar span {
+  padding: 0;
+  margin: 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 

@@ -6,6 +6,7 @@
   </div>
   <phrasesSection/>
   <learnWithUs/>
+  <Footer></Footer>
 </template>
 
 <script setup>
@@ -14,6 +15,7 @@ import sectionDescription from "@/components/section-description.vue";
 import StepByStep from "@/components/stepbystep.vue";
 import phrasesSection from "@/components/phrases-section.vue";
 import learnWithUs from "@/components/learnWithUs.vue";
+import Footer from "@/components/footer.vue";
 </script>
 
 

@@ -3,6 +3,7 @@ import landingRoutes from "./routes/landing.routes";
 import authRoutes from "./routes/auth.routes";
 import profile from "./routes/profile.routes";
 import { useAuthStore } from "../stores/authStore";
+import { useUserStore } from "@/stores/userStore";
 import payment from "./routes/payment.routes";
 import bookings from "./routes/bookings.routes";
 
@@ -45,34 +46,32 @@ const router = createRouter({
 });
 
 // Hook para activar las transiciones en navegación
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
+  const user = useUserStore();
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     auth.showLoginModal = true;
 
-    // Si no vienes de ninguna ruta (ej: primera carga de la app), no uses transición
     if (!from.name) {
       return next({ name: "home" });
     }
 
     next(false);
-  } else {
-    // Si el navegador no soporta View Transitions, sigue normal
-    if (!document.startViewTransition) {
-      return next();
+  } 
+  else {
+    if (!user.currentUser) {
+      await auth.restoreSession();
     }
 
-    // Si no vienes de ninguna ruta (ej: primera carga de la app), no uses transición
-    if (!from.name) {
-      return next();
+    // Verificación para el perfil
+    if (to.name === "profile" && to.params.id !== user.currentUser?._id) {
+      return next(`/profile/${user.currentUser._id}`);
     }
-
-    // Envolver la navegación en la transición
-    document.startViewTransition(() => {
-      next();
-    });
-  }
+    next();
+  } 
+    
+  
 });
 
 export default router;

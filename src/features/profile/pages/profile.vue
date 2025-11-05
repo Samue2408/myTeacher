@@ -3,31 +3,32 @@
     <div class="spinner"></div>
   </div>
 
-  <div v-else-if="!tutor" class="not-found">No se encontró el tutor.</div>
+  <div v-else-if="!currentUser" class="not-found">No se encontró el usuario.</div>
 
   <div v-else class="dashboard">
     <aside class="sidebar">
       <button class="back" @click="goBack">← Volver</button>
-      <img :src="tutor.img" :alt="tutor.name" class="avatar" />
-      <h2 class="name">{{ tutor.name }}</h2>
+      <img v-if="currentUser.img" :src="currentUser.img" :alt="currentUser.name" class="profilePic" />
+      <div v-else class="avatar"><span>{{ currentUser.name[0] }}</span></div>
+      <h2 class="name">{{ currentUser.name }}</h2>
 
       <div class="info">
         <div class="info-item">
           <label>Materia</label>
-          <p>{{ tutor.subject }}</p>
+          <p>{{ currentUser.subject }}</p>
         </div>
         
         <div class="info-item">
           <label>Nivel</label>
-          <p>{{ tutor.description }}</p>
+          <p>{{ currentUser.description }}</p>
         </div>
         <div class="info-item">
           <label>Correo personal</label>
-          <p>{{ tutor.email }}</p>
+          <p>{{ currentUser.email }}</p>
         </div>
         <div class="info-item">
           <label>Teléfono</label>
-          <p>{{ tutor.phone }}</p>
+          <p>{{ currentUser.phone }}</p>
         </div>
       </div>
 
@@ -133,16 +134,17 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useTutorsStore } from "@/stores/tutorsStore";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/authStore";
+import { useUserStore } from "@/stores/userStore";
 
 const auth = useAuthStore()
 
 const route = useRoute();
 const router = useRouter();
-const tutorsStore = useTutorsStore();
-const { tutors, loading } = storeToRefs(tutorsStore);
+const usersStore = useUserStore();
+const { currentUser, allUsers } = storeToRefs(usersStore);
+
 
 const tutor = ref({});
 const activeTab = ref("Resumen");
@@ -181,12 +183,12 @@ function handleLogout() {
 }
 
 onMounted(async () => {
-  if (!tutors.value.length) await tutorsStore.fetchTutors();
+  if (!allUsers.value.length) await usersStore.fetchAllUsers();
   const id = Number(route.params.id);
-  tutor.value = tutorsStore.getTutorById(id) || {};
-  tutor.value = {
-    ...tutor.value,
-    email: tutor.value.email,
+  allUsers.value = tutorsStore.getTutorById(id) || {};
+  currentUser.value = {
+    ...currentUser.value,
+    email: currentUser.value.email,
     phone: tutor.value.phone,
     status: "Disponible",
     created: "February 24, 2023",
@@ -227,12 +229,30 @@ onMounted(async () => {
   text-align: left;
 }
 
-.avatar {
+.profilePic {
   width: 100px;
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
   align-self: center;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #08B294;
+  margin-inline: auto;
+}
+.avatar span {
+  padding: 0;
+  margin: 0;
+  color: #fff;
+  font-size: 55px;
+  font-weight: 600;
 }
 
 .name {

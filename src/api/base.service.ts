@@ -14,17 +14,17 @@ export class BaseService {
   }
 
   async create(payload: any) {
-    const { data } = await http.post(this.basePath, payload)
+    const { data } = await http.post(`${this.basePath}/create`, payload)
     return data
   }
 
   async update(id: number | string, payload: any) {
-    const { data } = await http.put(`${this.basePath}/${id}`, payload)
+    const { data } = await http.put(`${this.basePath}/update/${id}`, payload)
     return data
   }
 
   async delete(id: number | string) {
-    const { data } = await http.delete(`${this.basePath}/${id}`)
+    const { data } = await http.delete(`${this.basePath}/delete/${id}`)
     return data
   }
 }

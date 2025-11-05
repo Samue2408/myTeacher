@@ -1,29 +1,43 @@
 import { defineStore } from 'pinia'
+import { UsersService } from '@/api/user.service';
 
 interface User {
-    id: number;
-    name: string;
-    email: string;
-    age?: number; 
-    image?: string
+  _id: string
+  name: string,
+  email: string,
+  role: string,
+  phone?: string,
+  balance?: number,
+  location?: Object,
+  reputation?: Object,
+  validatedTeacher?: boolean
 }
 
 
-export const useUser = defineStore('user', {
-  state: (): User => ({
-    id: 1,
-    name: "Mauricio",
-    email: "mauro@gmail.com",
-    image: "https://plus.unsplash.com/premium_photo-1689977968861-9c91dbb16049?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Zm90byUyMGRlJTIwcGVyZmlsfGVufDB8fDB8fHww&fm=jpg&q=60&w=3000"
+export const useUserStore = defineStore('user', {
+  state: () => ({
+    currentUser: null as User,
+    allUsers: [] as User[]
   }),
+
+  getters: {
+    isTeacher: (state) => state.currentUser?.role === "teacher",
+    userId: (state) => state.currentUser?._id,
+  },
+
   actions: {
-    getUser() {
-    
+    async fetchUser(id: string) {
+      this.currentUser = await UsersService.getById(id);
     },
-    logout() {
-      this.isAuthenticated = false
-      this.token = null
-    }
+
+    async fetchAllUsers() {
+      this.allUsers = await UsersService.getAll();
+    },
+
+    clearUser() {
+      this.currentUser = null;
+      this.allUsers = [];
+    },
   }
 })
 

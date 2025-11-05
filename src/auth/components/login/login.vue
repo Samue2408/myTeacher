@@ -106,7 +106,7 @@ async function handleLogin() {
     await auth.login(user);
 
     if (auth.token) {
-      router.push({ path: "/" });
+      router.push({ path: "/profile/1" });
     } else {
       errorMsg.value = "Credenciales incorrectas";
     }
