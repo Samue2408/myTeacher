@@ -90,7 +90,11 @@ const handleSearch = (query) => {
   setTimeout(() => (loading.value = false), 600);
 };
 
-const goToHome = () => router.push({ path: "/" });
+const goToHome = () => {
+  if (auth.isAuthenticated){
+    router.push({ path: "/search" });
+  } else router.push({ path: "/" });
+}
 const goToBookins = () => router.push({ path: "/bookings" });
 
 const goToSearch = (q) => {

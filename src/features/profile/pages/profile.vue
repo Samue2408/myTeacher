@@ -10,17 +10,14 @@
       <button class="back" @click="goBack">← Volver</button>
       <img v-if="currentUser.img" :src="currentUser.img" :alt="currentUser.name" class="profilePic" />
       <div v-else class="avatar"><span>{{ currentUser.name[0] }}</span></div>
-      <h2 class="name">{{ currentUser.name }}</h2>
+      <div class="name">
+        <h2>{{ currentUser.name }}</h2><span v-if="currentUser?.validatedTeacher" class="material-icons-outlined">verified_user</span>
+      </div>
 
       <div class="info">
         <div class="info-item">
-          <label>Materia</label>
-          <p>{{ currentUser.subject }}</p>
-        </div>
-        
-        <div class="info-item">
-          <label>Nivel</label>
-          <p>{{ currentUser.description }}</p>
+          <label>Popularidad</label>
+          <p>{{ currentUser.reputation.rating }}</p>
         </div>
         <div class="info-item">
           <label>Correo personal</label>
@@ -32,9 +29,9 @@
         </div>
       </div>
 
-      <button class="outline">Ver todos los campos</button>
+      <button class="outline">Editar Perfil</button>
 
-      <button @click="handleLogout">Cerrar Sesión</button>
+      <button class="logout outline" @click="handleLogout">Cerrar Sesión</button>
     </aside>
 
     <main class="main">
@@ -52,30 +49,62 @@
       <section v-if="activeTab === 'Resumen'" class="section">
         <div class="cards">
           <div class="card">
-            <h3>Progreso del perfil</h3>
-            <p class="value">{{ tutor.progress }}%</p>
-            <div class="progress-bar">
+            <h3>Estudiantes</h3>
+            <div class="value">
+              <h2>10</h2> 
+              <div class="indicator positive">
+                <span>+3</span>
+              </div>
+            </div>
+            <p>Alumnos atendidos</p>
+            <!-- <div class="progress-bar">
               <div
                 class="progress"
                 :style="{ width: tutor.progress + '%' }"
               ></div>
-            </div>
+            </div> -->
           </div>
 
           <div class="card">
-            <h3>Horas enseñadas</h3>
-            <p class="value">{{ tutor.hoursThisMonth }}h</p>
+            <h3>Ingresos</h3>
+            <div class="value">
+              <h2>$300k</h2> 
+              <div class="indicator positive">
+                <span class="material-icons-outlined">call_made</span>
+              </div>
+            </div>
+            <p>Ganancias obtenidas</p>
+          </div>
+          <div class="card">
+            <h3>Clases canceladas</h3>
+            <div class="value">
+              <h2>5</h2> 
+              <div class="indicator negative">
+                <span>+3</span>
+              </div>
+            </div>
+            <p>Sesiones no realizadas</p>
+          </div>
+          <div class="card">
+            <h3>Solicitudes pendientes</h3>
+            <div class="value">
+              <h2>3</h2> 
+              <div class="indicator warning">
+                <span class="material-icons-outlined">call_made</span>
+              </div>
+            </div>
+            <p>Reservas en espera</p>
           </div>
         </div>
 
-        <div class="highlight">
+        <!-- <div class="highlight">
           <p>
-            {{ tutor.name }} está disponible para tutorías en
+            {{ currentUser.name }} está disponible para tutorías en
             <strong>{{ tutor.subject }}</strong
             >.
           </p>
           <button class="primary">Agendar tutoría</button>
-        </div>
+        </div> -->
       </section>
 
       <section v-else-if="activeTab === 'Actividades'" class="section">
@@ -94,25 +123,14 @@
         </ul>
       </section>
 
-      <section
-        v-else-if="activeTab === 'Horarios'"
-        class="section calendar-section"
-      >
-        <h3>Disponibilidad semanal</h3>
-        <div class="calendar-grid">
-          <div
-            v-for="(h, i) in schedule"
-            :key="i"
-            :class="[
-              'calendar-cell',
-              h.status === 'Disponible' ? 'available' : 'busy',
-            ]"
-          >
-            <h4>{{ h.day }}</h4>
-            <p>{{ h.time }}</p>
-          </div>
-        </div>
-      </section>
+      
+    <section v-else-if="activeTab === 'Materias a Impartir'" class="section calendar-section">
+      <Subjects  />
+    </section>
+      
+      
+
+
 
       <section v-else-if="activeTab === 'Documentos'" class="section">
         <h3>Documentos compartidos</h3>
@@ -137,6 +155,7 @@ import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/userStore";
+import Subjects from "@/components/profile/subjects.vue";
 
 const auth = useAuthStore()
 
@@ -148,7 +167,7 @@ const { currentUser, allUsers } = storeToRefs(usersStore);
 
 const tutor = ref({});
 const activeTab = ref("Resumen");
-const tabs = ["Resumen", "Actividades", "Horarios", "Documentos"];
+const tabs = ["Resumen", "Materias a Impartir", "Actividades", "Documentos"];
 
 const activities = ref([
   {
@@ -182,20 +201,10 @@ function handleLogout() {
   router.push({path: '/'})
 }
 
+
+
 onMounted(async () => {
-  if (!allUsers.value.length) await usersStore.fetchAllUsers();
-  const id = Number(route.params.id);
-  allUsers.value = tutorsStore.getTutorById(id) || {};
-  currentUser.value = {
-    ...currentUser.value,
-    email: currentUser.value.email,
-    phone: tutor.value.phone,
-    status: "Disponible",
-    created: "February 24, 2023",
-    updated: "October 20, 2025",
-    progress: 85,
-    hoursThisMonth: 12,
-  };
+  
 });
 </script>
 
@@ -256,10 +265,21 @@ onMounted(async () => {
 }
 
 .name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.name h2 {
   font-size: 19px;
   font-weight: 600;
-  text-align: center;
-  margin-bottom: 4px;
+}
+
+.name span {
+  color: #08B294;
+  font-size: 19px;
+  
 }
 
 .info {
@@ -296,6 +316,16 @@ onMounted(async () => {
 }
 .outline:hover {
   background: #f5f6fa;
+}
+
+.logout {
+  margin-top: auto;
+  color: #EE332D;
+  font-weight: 800;
+}
+
+.logout:hover {
+ background-color: #FCDCDB;
 }
 
 .main {
@@ -339,14 +369,57 @@ onMounted(async () => {
 }
 .card h3 {
   font-size: 15px;
-  color: #666;
+  color: #222;
   margin-bottom: 10px;
 }
+
 .value {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.value h2 {
+  font-size: 48px;
   font-weight: 600;
   color: #222;
 }
+
+.value .indicator {
+  border-radius: 50%;
+  padding: 5px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.value .indicator span {
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.value .indicator.positive {
+  background-color: #DCF4F0;
+  color: #08B294;
+}
+
+.value .indicator.negative {
+  background-color: #FCDCDB;
+  color: #EE332D;
+}
+
+.value .indicator.warning {
+  background-color: #FCFAE3;
+  color: #CEBD00;
+}
+
+.card p {
+  font-size: 13px;
+  font-weight: 200;
+  color: #222;
+
+}
+
 .progress-bar {
   background: #f0f0f0;
   border-radius: 8px;

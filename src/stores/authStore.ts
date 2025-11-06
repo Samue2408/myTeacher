@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean
   token: string | null
   showLoginModal: boolean,
+  showSessionClosedModal: boolean,
   loading: boolean,
   
 }
@@ -17,6 +18,7 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: Boolean(localStorage.getItem('token')),
     token: localStorage.getItem('token'),
     showLoginModal: false,
+    showSessionClosedModal: false,
     loading: false    
   }),
   actions: {
@@ -51,6 +53,7 @@ export const useAuthStore = defineStore('auth', {
           await userStore.fetchUser(decoded.id);
         } catch {
           this.logout();
+          this.showSessionClosedModal = true
         }
       }
     },
