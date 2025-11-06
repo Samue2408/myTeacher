@@ -6,6 +6,8 @@ import { useAuthStore } from './stores/authStore';
 
 import "./_global.css";
 import "./shared/styles/loader.css";
+import "./shared/styles/skeleton.css";
+
 
 const app = createApp(App);
 app.use(router);

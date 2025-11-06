@@ -1,0 +1,57 @@
+.skltn {
+  animation: shimmer 1.5s infinite;
+  width: 100%;
+  display: block;
+  background-color: hsl(200, 20%, 90%);
+  border-radius: 0.25rem;
+}
+
+.skltn.skltn-text {
+  height: 1rem;
+  width: 100%;
+  border-radius: 0.25rem;
+}
+
+.skltn.skltn-text.large {
+  height: 24px;
+}
+
+.skltn.skltn-image {
+  height: 100%;
+  width: 100%;
+  border-radius: 0.25rem;
+}
+
+.skltn.skltn-image.small {
+  height: 30px;
+  width: 30px;
+}
+
+.skltn.skltn-image.medium {
+  height: 36px;
+  width: 36px;
+}
+
+.skltn.skltn-image.large {
+  height: 54px;
+  width: 54px;
+  min-width: 54px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-color: hsl(200, 20%, 85%);
+  }
+  100% {
+    background-color: hsl(200, 20%, 95%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
