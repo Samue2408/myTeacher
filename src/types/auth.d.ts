@@ -29,7 +29,7 @@ export interface RegisterData {
 }
 
 export interface TokenUser {
-    id: string
+    idUser: string
     role: string
     email: string
 }

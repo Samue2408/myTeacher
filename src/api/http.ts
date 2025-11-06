@@ -1,4 +1,5 @@
 // src/api/http.ts
+import { useAppStore } from '@/stores/appStore'
 import axios from 'axios'
 
 const http = axios.create({
@@ -14,5 +15,18 @@ http.interceptors.request.use(config => {
   if (token && config.headers) config.headers.Authorization = `Bearer ${token}`
   return config
 })
+
+
+http.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const appStore = useAppStore();
+    const message =
+      error.response?.data?.message || "Error inesperado en el servidor";
+    appStore.setError(message);
+    // Evita que Axios lance el error al console
+    return Promise.reject(error);
+  }
+);
 
 export default http

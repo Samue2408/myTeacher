@@ -125,9 +125,9 @@
 
       
     <section v-else-if="activeTab === 'Materias a Impartir'" class="section calendar-section">
-      <Subjects  />
+      <Subjects :tutor-id="currentUser._id" />
     </section>
-      
+    
       
 
 

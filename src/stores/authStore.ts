@@ -3,6 +3,7 @@ import AuthService from '@/api/auth.service'
 import { LoginCredentials, TokenUser } from '@/types/auth'
 import { jwtDecode } from "jwt-decode";
 import { useUserStore } from './userStore';
+import { useSubjectsStore } from './subjectStore';
 
 interface AuthState {
   isAuthenticated: boolean
@@ -34,7 +35,8 @@ export const useAuthStore = defineStore('auth', {
 
         const userStore = useUserStore()
         const decode: TokenUser = jwtDecode<TokenUser>(response.token)
-        await userStore.fetchUser(decode.id)
+        console.log(decode)
+        await userStore.fetchUser(decode.idUser)
 
         this.isAuthenticated = true
 
@@ -50,7 +52,7 @@ export const useAuthStore = defineStore('auth', {
         try {
           const decoded: TokenUser = jwtDecode(this.token);
           const userStore = useUserStore();
-          await userStore.fetchUser(decoded.id);
+          await userStore.fetchUser(decoded.idUser);
         } catch {
           this.logout();
           this.showSessionClosedModal = true
@@ -59,11 +61,15 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
-      this.token = null
       localStorage.removeItem('token')
+      this.token = null
       this.isAuthenticated = false
 
+      
+
       const userStore = useUserStore();
+      const subjectStore = useSubjectsStore();
+      subjectStore.$reset()
       userStore.clearUser();
 
     },
