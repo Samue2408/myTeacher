@@ -60,9 +60,8 @@ router.beforeEach(async (to, from, next) => {
     next(false);
   } 
   else {
-    if (!user.currentUser) {
-      await auth.restoreSession();
-    }
+    
+    await auth.restoreSession();
 
     // Verificación para el perfil
     if (to.name === "profile" && to.params.id !== user.currentUser?._id) {

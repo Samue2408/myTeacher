@@ -47,64 +47,7 @@
       </nav>
 
       <section v-if="activeTab === 'Resumen'" class="section">
-        <div class="cards">
-          <div class="card">
-            <h3>Estudiantes</h3>
-            <div class="value">
-              <h2>10</h2> 
-              <div class="indicator positive">
-                <span>+3</span>
-              </div>
-            </div>
-            <p>Alumnos atendidos</p>
-            <!-- <div class="progress-bar">
-              <div
-                class="progress"
-                :style="{ width: tutor.progress + '%' }"
-              ></div>
-            </div> -->
-          </div>
-
-          <div class="card">
-            <h3>Ingresos</h3>
-            <div class="value">
-              <h2>$300k</h2> 
-              <div class="indicator positive">
-                <span class="material-icons-outlined">call_made</span>
-              </div>
-            </div>
-            <p>Ganancias obtenidas</p>
-          </div>
-          <div class="card">
-            <h3>Clases canceladas</h3>
-            <div class="value">
-              <h2>5</h2> 
-              <div class="indicator negative">
-                <span>+3</span>
-              </div>
-            </div>
-            <p>Sesiones no realizadas</p>
-          </div>
-          <div class="card">
-            <h3>Solicitudes pendientes</h3>
-            <div class="value">
-              <h2>3</h2> 
-              <div class="indicator warning">
-                <span class="material-icons-outlined">call_made</span>
-              </div>
-            </div>
-            <p>Reservas en espera</p>
-          </div>
-        </div>
-
-        <!-- <div class="highlight">
-          <p>
-            {{ currentUser.name }} está disponible para tutorías en
-            <strong>{{ tutor.subject }}</strong
-            >.
-          </p>
-          <button class="primary">Agendar tutoría</button>
-        </div> -->
+        <Dashboard/>
       </section>
 
       <section v-else-if="activeTab === 'Actividades'" class="section">
@@ -124,7 +67,7 @@
       </section>
 
       
-    <section v-else-if="activeTab === 'Materias a Impartir'" class="section calendar-section">
+    <section v-else-if="activeTab === 'Materias a Impartir'" class="section subjects-section">
       <Subjects :tutor-id="currentUser._id" />
     </section>
     
@@ -151,18 +94,19 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/userStore";
-import Subjects from "@/components/profile/subjects.vue";
+
+import Subjects from "@/components/profile/subjects/subjects.vue";
+import Dashboard from "@/components/profile/dashboard/dashboard.vue";
 
 const auth = useAuthStore()
 
-const route = useRoute();
 const router = useRouter();
 const usersStore = useUserStore();
-const { currentUser, allUsers } = storeToRefs(usersStore);
+const { currentUser } = storeToRefs(usersStore);
 
 
 const tutor = ref({});
@@ -312,7 +256,7 @@ onMounted(async () => {
   padding: 10px;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 .outline:hover {
   background: #f5f6fa;
@@ -321,11 +265,12 @@ onMounted(async () => {
 .logout {
   margin-top: auto;
   color: #EE332D;
+  border-color: #EE332D;
   font-weight: 800;
 }
 
 .logout:hover {
- background-color: #FCDCDB;
+ background-color: #ffefef;
 }
 
 .main {

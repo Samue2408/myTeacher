@@ -1,25 +1,28 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { defineProps } from "vue";
 
-defineProps<{
+
+const $props = defineProps<{
   modelValue: string;
   type?: string;
   placeholder?: string;
   icon?: string; 
   disabled?: boolean;
   readonly?: boolean;
+  styles?: string;
 }>();
 
 const emit = defineEmits(["update:modelValue"]);
-
 const onInput = (e: Event) => {
   const target = e.target as HTMLInputElement;
   emit("update:modelValue", target.value);
 };
+
+
 </script>
 
 <template>
-  <div class="input-wrapper">
+  <div class="input-wrapper" :class="$props.styles">
     <input
       :type="type || 'text'"
       :value="modelValue"
@@ -39,11 +42,18 @@ const onInput = (e: Event) => {
 <style scoped>
 .input-wrapper {
   display: flex;
-  align-items: center;
-  background: #f2f2f2;
+  background-color: #f2f2f2;
+  align-items: center;  
   border-radius: 6px;
-  padding: 15px 10px;
+  padding: 15px 12px;
   width: 100%;
+  gap: 8px;
+}
+
+.input-wrapper.white {
+  background-color: #fff;
+  border-radius: 8px;
+  flex-direction: row-reverse;
 }
 
 .input-field {
@@ -61,7 +71,6 @@ const onInput = (e: Event) => {
 
 .input-icon {
   color: var(--color-gray);
-  margin-left: 8px;
   font-size: 16px;
   display: flex;
   align-items: center;

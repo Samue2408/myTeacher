@@ -2,7 +2,7 @@
   <RouterView></RouterView>
   <LoginRequiredModal v-if="auth.showLoginModal" @close="auth.showLoginModal = false" />
   <SessionClosed v-if="auth.showSessionClosedModal" @close="auth.showSessionClosedModal = false" />
-  <!-- <AppAlert /> -->
+  <AppAlert />
 </template>
 
 <script setup>

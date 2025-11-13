@@ -14,7 +14,7 @@ export class BaseService {
   }
 
   async create(payload: any) {
-    const { data } = await http.post(`${this.basePath}/create`, payload)
+    const { data } = await http.post(`${this.basePath}/create`, payload) // así no se recibirá el mensaje, habría que hacerle modificaciones
     return data
   }
 

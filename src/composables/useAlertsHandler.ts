@@ -7,10 +7,26 @@ export function useErrorHandler() {
     const message =
       error.response?.data?.message ||
       error.message ||
+      error ||
       defaultMessage;
 
     appStore.setError(message);
   }
 
   return { handleError };
+}
+
+export function useSuccessHandler() {
+  const appStore = useAppStore();
+
+  function handleSuccess(response: any) {
+    const message =
+      response?.data?.message ||
+      response.message ||
+      response;
+
+    appStore.setSuccess(message);
+  }
+
+  return { handleSuccess };
 }

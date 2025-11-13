@@ -4,6 +4,7 @@ import { LoginCredentials, TokenUser } from '@/types/auth'
 import { jwtDecode } from "jwt-decode";
 import { useUserStore } from './userStore';
 import { useSubjectsStore } from './subjectStore';
+import { useRouter } from "vue-router";
 
 interface AuthState {
   isAuthenticated: boolean
@@ -54,8 +55,10 @@ export const useAuthStore = defineStore('auth', {
           const userStore = useUserStore();
           await userStore.fetchUser(decoded.idUser);
         } catch {
-          this.logout();
           this.showSessionClosedModal = true
+          this.logout();
+          const router = useRouter();
+          router.push({path: '/user'})
         }
       }
     },
@@ -63,9 +66,7 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       localStorage.removeItem('token')
       this.token = null
-      this.isAuthenticated = false
-
-      
+      this.isAuthenticated = false      
 
       const userStore = useUserStore();
       const subjectStore = useSubjectsStore();

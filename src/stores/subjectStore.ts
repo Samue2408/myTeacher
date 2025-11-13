@@ -1,44 +1,100 @@
 import { defineStore } from 'pinia'
 import { SubjectsType } from '@/types/subjects';
 import { SubjectsService } from '@/api/subjects.service';
-import { useErrorHandler } from '@/composables/useErrorHandler';
+import { useErrorHandler, useSuccessHandler } from '@/composables/useAlertsHandler';
 
 export const useSubjectsStore = defineStore('subjects', {
   state: () => ({
-    subjects: [] as SubjectsType[],
-    SubjectsTutor: [] as SubjectsType[],
-    errorMessage: "",
-    loaded: false 
+    subjects: [] as SubjectsType[],          // Todas las materias (solo si se usan globalmente)
+    SubjectsTutor: [] as SubjectsType[],     // Materias del tutor autenticado
+    loadedTutorId: null as string | null,    // Controla si ya se cargó ese tutor
+    loading: false,                          // Estado general de carga
+    errorMessage: '' as string,              // Mensaje de error para mostrar en UI
   }),
 
-  actions: {
-    async fetchAllSubjects(force = false) {
-      if (this.loaded && !force) return
+  getters: {
+    hasSubjects: (state) => state.SubjectsTutor.length > 0,
+    isLoadedForTutor: (state) => (tutorId: string) =>
+      state.loadedTutorId === tutorId && state.SubjectsTutor.length > 0,
+  },
 
+  actions: {
+    async createSubject(subjectData: SubjectsType){
+      const { handleError } = useErrorHandler();
+      const { handleSuccess } = useSuccessHandler()
+      this.loading = true;
+
+      try {
+        const created = await SubjectsService.create(subjectData);
+        this.SubjectsTutor.push(created);
+        this.errorMessage = ''
+        handleSuccess('Materia creada con éxito')
+      } catch (err) {
+        handleError(this.errorMessage);
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchAllSubjects() {
+      this.loading = true;
       try {
         const data = await SubjectsService.getAll();
         this.subjects = data;
-        this.loaded = true;
+        this.loading = false;
+        this.errorMessage = ''
       } catch (error) {
         console.error("Error al obtener las materias:", error);
       }
     },
 
-    async fetchSubjectsByTutor(tutorId: string, force = false) {
-      const { handleError } = useErrorHandler();
+    async fetchSubjectsByTutor(tutorId: string) {
+      if (this.isLoadedForTutor(tutorId)) return; // Usa cache
 
-      if (this.loaded && !force) return
+      this.loading = true;
+      this.errorMessage = '';
 
       try {
         const data = await SubjectsService.getByTutor(tutorId);
         this.SubjectsTutor = data;
-        this.loaded = true;
-        this.errorMessage = ''
+        this.loading = false;
+        this.loadedTutorId = tutorId;
 
       } catch (error) {
-        handleError(error, "No se pudieron cargar las materias.");
         this.errorMessage = 'No se econtraron materias'
       }
+    },
+
+    async updateSubject(subjectData: SubjectsType){
+      const { handleError } = useErrorHandler();
+      const { handleSuccess } = useSuccessHandler()
+
+      this.loading = true;
+
+      try {
+        await SubjectsService.update(subjectData._id, subjectData);
+        this.errorMessage = ''
+        handleSuccess('Materia actualizada con éxito')
+      } catch (err) {
+        handleError(this.errorMessage);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async deleteSubject(idSubject: string) {
+      try {
+        const data = await SubjectsService.delete(idSubject)
+        this.SubjectsTutor = this.SubjectsTutor.filter(s => s._id !== idSubject);
+        this.errorMessage = ''
+      } catch (error) {
+        console.error("Error al obtener las materias:", error);
+      }
+    },
+
+    /** 🔹 Refrescar materias de un tutor (ignora cache) */
+    async refreshSubjectsByTutor(tutorId: string) {
+      this.loadedTutorId = null;
+      await this.fetchSubjectsByTutor(tutorId);
     },
   }
 

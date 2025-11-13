@@ -1,6 +1,6 @@
 <template>
   <div class="combo-box" @click.stop="toggleList">
-    <div class="combo-selected">
+    <div class="combo-selected" :class="$props.styles" >
       <div v-if="startItem && selectedItem?.img" class="start-item">
         <img :src="selectedItem.img" :alt="selectedItem.label" />
       </div>
@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, defineProps } from "vue";
 
 interface Item {
   label: string;
@@ -33,19 +33,22 @@ interface Item {
   img?: string;
 }
 
-const props = defineProps<{
+const $props = defineProps<{
   modelValue: string | null;
   items: Item[];
   placeholder?: string;
   startItem?: boolean;
+  styles?: string;
 }>();
+
+console.log($props.styles)
 
 const emit = defineEmits(["update:modelValue"]);
 
 const isOpen = ref(false);
 
 const selectedItem = computed(() =>
-  props.items.find((item) => item.value === props.modelValue) || null
+  $props.items.find((item) => item.value === $props.modelValue) || null
 );
 
 function toggleList() {
@@ -73,16 +76,19 @@ onBeforeUnmount(() => document.removeEventListener("click", handleClickOutside))
   font-size: 14px;
 }
 
+
 .combo-selected {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 10px 12px;
+  background-color: #f2f2f2;
+  padding: 15px 12px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.combo-selected.white {
+  background-color: #fff;
 }
 
 .combo-selected:hover {
