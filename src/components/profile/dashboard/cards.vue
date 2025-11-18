@@ -1,32 +1,46 @@
 <template>
-    <div class="card">
-        <h3>{{ $props.title }}</h3>
-        <div class="value">
-            <h2>{{ $props.value }}</h2> 
-            <div :class="[
-                'indicator',
-                $props.indicatorNum >= 0 ?
-                    !invertConditionValue 
-                        ? 'positive' 
-                        : 'negative' 
-                : !invertConditionValue 
-                        ? 'negative' 
-                        : 'positive' ,
-                $props.indicatorIcon == 'visibility' ? 'warning' : ''
-            ]">
-                <span :class="$props.indicatorIcon ? 'material-icons-outlined': ''">
-                    {{ $props.indicatorIcon ? $props.indicatorIcon : $props.indicatorNum>=0 ? `+${$props.indicatorNum}`: $props.indicatorNum }}
-                </span>
+    <template v-if="$props.skeleton">
+        <div class="card" >
+            <h3 class="skltn skltn-text" style="width: 300px; height: 20px"></h3>
+            <div class="value">
+                <h2 class="skltn skltn-text" style="width: 50px; height: 72px"></h2> 
+                <div class="'skltn indicator" style="width: 25px; height: 25px">
+                    <span class="skltn skltn-text"></span>
+                </div>
             </div>
+            <p class="skltn skltn-text" style="width: 300px; height: 13px; margin-top: 10px;"></p>
         </div>
-        <p>Alumnos atendidos</p>
-        <!-- <div class="progress-bar">
-            <div
-            class="progress"
-            :style="{ width: tutor.progress + '%' }"
-            ></div>
-        </div> -->
-    </div>
+    </template>
+    <template v-else>
+        <div class="card">
+            <h3>{{ $props.title }}</h3>
+            <div class="value">
+                <h2>{{ $props.value }}</h2> 
+                <div :class="[
+                    'indicator',
+                    $props.indicatorNum >= 0 ?
+                        !invertConditionValue 
+                            ? 'positive' 
+                            : 'negative' 
+                    : !invertConditionValue 
+                            ? 'negative' 
+                            : 'positive' ,
+                    $props.indicatorIcon == 'visibility' ? 'warning' : ''
+                ]">
+                    <span :class="$props.indicatorIcon ? 'material-icons-outlined': ''">
+                        {{ $props.indicatorIcon ? $props.indicatorIcon : $props.indicatorNum>=0 ? `+${$props.indicatorNum}`: $props.indicatorNum }}
+                    </span>
+                </div>
+            </div>
+            <p>{{ $props.subtitle }}</p>
+            <!-- <div class="progress-bar">
+                <div
+                class="progress"
+                :style="{ width: tutor.progress + '%' }"
+                ></div>
+            </div> -->
+        </div>
+    </template>
 </template>
 
 <script setup>
@@ -54,15 +68,14 @@ const $props = defineProps({
         type: String,
         required: true
     },
+    skeleton: {
+        type: Boolean,
+        default: false
+    }
 })
-
 </script>
 
 <style scoped>
-.cards {
-  display: flex;
-  gap: 20px;
-}
 .card {
   background: #fff;
   border-radius: 12px;

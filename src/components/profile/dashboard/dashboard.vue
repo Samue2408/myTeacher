@@ -1,58 +1,29 @@
-<template>    
+<template>
+  <template v-if="dashboardStore.isLoading">
     <div class="cards">
-        <template v-if="dashboardStore.isLoading">
-            <div v-for="n in 6" :key="n" class="subjects-cell">
-                <div>
-                    <div class="category">
-                        <p class="skltn skltn-text"></p>
-                    </div>
-                    <h4 class="skltn skltn-text"></h4>
-                </div>
-                <p class="description skltn skltn-text"></p>
-                <div>
-                    <hr>
-                    <div class="price-actions">
-                        <span class="skltn skltn-text" style="width: 60px"></span>
-                        <div class="actions">
-                            <span class="skltn skltn-text" style="width: 20px; height: 20px"></span>
-                            <span class="skltn skltn-text" style="width: 20px; height: 20px; margin-left: 8px"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </template>
-        <template v-else>
 
-          <Cards 
-            title="Estudiantes" 
-            :value="dashboardStore.dashboard.students.toString()"
-            :indicator-num="dashboardStore.dashboard.diferenceStudents"
-            subtitle="Alumnos Atendidos"
-          />
-          <Cards 
-            title="Ingresos" 
-            :value=formatCurrency(dashboardStore.dashboard.income)
-            :indicator-icon="dashboardStore.dashboard.diferenceIncomePercentage >= 0 ? 'call_made' : 'call_received'"
-            :indicator-num="dashboardStore.dashboard.diferenceIncomePercentage"
-            subtitle="Ganancias obtenidas"
-          />
-          <Cards 
-            title="Clases Canceladas" 
-            :value="dashboardStore.dashboard.canceledClasses.toString()"
-            :indicator-num="dashboardStore.dashboard.diferenceCanceledClasses"
-            :invert-condition-value="true"
-            subtitle="Sesiones no realizadas"
-          />
-          <Cards 
-            title="Solicitudes pendientes" 
-            :value="dashboardStore.dashboard.pendingRequests.toString()"
-            indicator-icon="visibility"
-            subtitle="Reservas en espera"
-          />
-        </template>
+      <div v-for="n in 4" :key="n">
+        <Cards :skeleton="true" />
+      </div>
     </div>
+  </template>
+  <template v-else>
+    <div class="cards">
 
-    <!-- <div class="highlight">
+      <Cards title="Estudiantes" :value="dashboardStore.dashboard.students.toString()"
+        :indicator-num="dashboardStore.dashboard.diferenceStudents" subtitle="Alumnos Atendidos" />
+      <Cards title="Ingresos" :value=formatCurrency(dashboardStore.dashboard.income)
+        :indicator-icon="dashboardStore.dashboard.diferenceIncomePercentage >= 0 ? 'call_made' : 'call_received'"
+        :indicator-num="dashboardStore.dashboard.diferenceIncomePercentage" subtitle="Ganancias obtenidas" />
+      <Cards title="Clases Canceladas" :value="dashboardStore.dashboard.canceledClasses.toString()"
+        :indicator-num="dashboardStore.dashboard.diferenceCanceledClasses" :invert-condition-value="true"
+        subtitle="Sesiones no realizadas" />
+      <Cards title="Solicitudes pendientes" :value="dashboardStore.dashboard.pendingRequests.toString()"
+        indicator-icon="visibility" subtitle="Reservas en espera" />
+    </div>
+  </template>
+
+  <!-- <div class="highlight">
         <p>
         {{ currentUser.name }} está disponible para tutorías en
         <strong>{{ tutor.subject }}</strong
@@ -98,5 +69,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
+.cards {
+  display: flex;
+  gap: 20px;
+}
 </style>
