@@ -23,55 +23,32 @@
         </template>
         <template v-else>
 
-            <div class="card">
-            <h3>Estudiantes</h3>
-            <div class="value">
-                <h2>10</h2> 
-                <div class="indicator positive">
-                <span>+3</span>
-                </div>
-            </div>
-            <p>Alumnos atendidos</p>
-            <!-- <div class="progress-bar">
-                <div
-                class="progress"
-                :style="{ width: tutor.progress + '%' }"
-                ></div>
-            </div> -->
-            </div>
-    
-            <div class="card">
-            <h3>Ingresos</h3>
-            <div class="value">
-                <h2>$300k</h2> 
-                <div class="indicator positive">
-                <span class="material-icons-outlined">call_made</span>
-                </div>
-            </div>
-            <p>Ganancias obtenidas</p>
-            </div>
-
-            <div class="card">
-            <h3>Clases canceladas</h3>
-            <div class="value">
-                <h2>5</h2> 
-                <div class="indicator negative">
-                <span>+3</span>
-                </div>
-            </div>
-            <p>Sesiones no realizadas</p>
-            </div>
-            
-            <div class="card">
-            <h3>Solicitudes pendientes</h3>
-            <div class="value">
-                <h2>3</h2> 
-                <div class="indicator warning">
-                <span class="material-icons-outlined">visibility</span>
-                </div>
-            </div>
-            <p>Reservas en espera</p>
-            </div>
+          <Cards 
+            title="Estudiantes" 
+            :value="dashboardStore.dashboard.students.toString()"
+            :indicator-num="dashboardStore.dashboard.diferenceStudents"
+            subtitle="Alumnos Atendidos"
+          />
+          <Cards 
+            title="Ingresos" 
+            :value=formatCurrency(dashboardStore.dashboard.income)
+            :indicator-icon="dashboardStore.dashboard.diferenceIncomePercentage >= 0 ? 'call_made' : 'call_received'"
+            :indicator-num="dashboardStore.dashboard.diferenceIncomePercentage"
+            subtitle="Ganancias obtenidas"
+          />
+          <Cards 
+            title="Clases Canceladas" 
+            :value="dashboardStore.dashboard.canceledClasses.toString()"
+            :indicator-num="dashboardStore.dashboard.diferenceCanceledClasses"
+            :invert-condition-value="true"
+            subtitle="Sesiones no realizadas"
+          />
+          <Cards 
+            title="Solicitudes pendientes" 
+            :value="dashboardStore.dashboard.pendingRequests.toString()"
+            indicator-icon="visibility"
+            subtitle="Reservas en espera"
+          />
         </template>
     </div>
 
@@ -91,10 +68,26 @@ import { onMounted } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useDashboardSync } from "@/composables/useDashboardSync";
 import { useUserStore } from "@/stores/userStore";
+import Cards from "./cards.vue";
 
 const dashboardStore = useDashboardStore();
 const userStore = useUserStore();
 const tutorId = userStore.currentUser?._id;
+
+function formatCurrency(value: any) {
+
+  const format = (num: number) =>
+    Number.isInteger(num) ? num.toString() : num.toFixed(1);
+
+  if (value >= 1_000_000) {
+    return `$${format(value / 1_000_000)}M`;
+  }
+  if (value >= 1_000) {
+    return `$${format(value / 1_000)}K`;
+  }
+  return `$${value}`;
+
+}
 
 onMounted(async () => {
   if (tutorId) {
@@ -105,67 +98,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.cards {
-  display: flex;
-  gap: 20px;
-}
-.card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  flex: 1;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-.card h3 {
-  font-size: 15px;
-  color: #222;
-  margin-bottom: 10px;
-}
 
-.value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.value h2 {
-  font-size: 48px;
-  font-weight: 600;
-  color: #222;
-}
-
-.value .indicator {
-  border-radius: 50%;
-  padding: 5px 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.value .indicator span {
-  font-weight: 800;
-  font-size: 12px;
-}
-
-.value .indicator.positive {
-  background-color: #DCF4F0;
-  color: #08B294;
-}
-
-.value .indicator.negative {
-  background-color: #FCDCDB;
-  color: #EE332D;
-}
-
-.value .indicator.warning {
-  background-color: #FCFAE3;
-  color: #CEBD00;
-}
-
-.card p {
-  font-size: 13px;
-  font-weight: 200;
-  color: #222;
-
-}
 </style>

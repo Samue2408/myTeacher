@@ -1,12 +1,14 @@
-export interface DashboardType {
-    
-    students: number,
-    canceledClasses: number,
-    income: number,
-    pendingRequests: number,
-    studentsLastPerium: number,
-    incomeLastPerium: number,
-    canceledClassesLastPerium: number,
+export interface DashboardType {    
+    canceledClasses: number
+    canceledClassesLastPerium: number
+    diferenceCanceledClasses: number
+    diferenceIncomePercentage: number
+    diferencePendingRequests: number
+    diferenceStudents: number
+    income: number
+    incomeLastPerium: number
+    pendingRequests: number
     pendingRequestsLastPerium: number
-    
+    students: number
+    studentsLastPerium: number    
 }
