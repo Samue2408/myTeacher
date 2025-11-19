@@ -26,8 +26,6 @@
           :items="results"
           :loading="loading"
           @search="handleSearch"
-          @select="goToItem"
-          @clear="clearSearch"
           @enter="goToSearch"
         />
       </div>
@@ -39,8 +37,6 @@
         :items="results"
         :loading="loading"
         @search="handleSearch"
-        @select="goToItem"
-        @clear="clearSearch"
         @enter="goToSearch"
       />
     </div>
@@ -49,9 +45,14 @@
       <div v-if="auth.isAuthenticated">
         <button @click="goToBookins">Mis reservas</button>
         <div class="nav__profile" @click="goToProfile">
-        
-          <img v-if="user.currentUser.image" :src="user.currentUser.image" alt="Perfil" />
-          <div v-else class="avatar"><span>{{ user.currentUser.name[0] }}</span></div>
+          <img
+            v-if="user.currentUser.image"
+            :src="user.currentUser.image"
+            alt="Perfil"
+          />
+          <div v-else class="avatar">
+            <span>{{ user.currentUser.name[0] }}</span>
+          </div>
         </div>
       </div>
 
@@ -63,38 +64,54 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import SearchBar from "@/shared/components/searchBar.vue";
 import { useAuthStore } from "@/stores/authStore";
-import { useUserStore } from "@/stores/userStore";
-const user = useUserStore()
 
-const goToProfile = () => router.push({ path: `/profile/${user.currentUser._id}` })
+import { useUserStore } from "@/stores/userStore";
+import { useSearchStore } from "@/stores/searchStore";
+
+const user = useUserStore();
+const goToProfile = () =>
+  router.push({ path: `/profile/${user.currentUser._id}` });
 
 const auth = useAuthStore();
 
 const router = useRouter();
-const loading = ref(false);
-const results = ref([]);
 const isOpen = ref(false);
 const showSearch = ref(false);
 
-const handleSearch = (query) => {
-  if (!query) {
-    results.value = [];
-    return;
-  }
-  loading.value = true;
-  setTimeout(() => (loading.value = false), 600);
+const searchs = useSearchStore();
+
+const loading = computed(() => searchs.loading);
+const results = computed(() => searchs.results);
+
+let debounceTimer = null;
+
+const handleSearch = (q: string) => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+
+  router.push({ path: "/search", query: { q } });
+
+  debounceTimer = setTimeout(async () => {
+    const cleanQuery = q.trim();
+    if (!cleanQuery) {
+      searchs.clear();
+      return;
+    }
+
+    await searchs.search(cleanQuery);
+  }, 300);
 };
 
 const goToHome = () => {
-  if (auth.isAuthenticated){
+  if (auth.isAuthenticated) {
     router.push({ path: "/search" });
   } else router.push({ path: "/" });
-}
+};
+
 const goToBookins = () => router.push({ path: "/bookings" });
 
 const goToSearch = (q) => {
@@ -102,6 +119,7 @@ const goToSearch = (q) => {
   router.push({ path: "/search", query: { q } });
   window.localStorage.setItem("query", q);
 };
+
 const goToLogIn = () => router.push({ path: "/user/login" });
 const toggleSearch = () => (showSearch.value = !showSearch.value);
 </script>
@@ -233,7 +251,7 @@ const toggleSearch = () => (showSearch.value = !showSearch.value);
   overflow: hidden;
   cursor: pointer;
   border: 2px solid white;
-  background-color: #08B294;
+  background-color: #08b294;
 }
 
 .nav__profile img {
@@ -257,7 +275,6 @@ const toggleSearch = () => (showSearch.value = !showSearch.value);
   font-weight: 600;
 }
 
-
 @media (min-width: 1024px) {
   .nav {
     gap: 20px;
@@ -279,7 +296,7 @@ const toggleSearch = () => (showSearch.value = !showSearch.value);
     gap: 10px;
   }
 
-  .nav__buttons div{
+  .nav__buttons div {
     display: flex;
     gap: 10px;
   }

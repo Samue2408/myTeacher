@@ -11,12 +11,13 @@ interface User {
   location?: Object,
   reputation?: Object,
   validatedTeacher?: boolean
+  image?: string
 }
 
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    currentUser: null as User,
+    currentUser: null as Partial<User>,
     allUsers: [] as User[]
   }),
 

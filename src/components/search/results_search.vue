@@ -2,66 +2,94 @@
   <div class="crm-container">
     <aside class="crm-sidebar">
       <div class="sidebar-top">
-        <p class="results-count">Resultados ({{ teachers.length }})</p>
+        <p class="results-count">Resultados ({{ subjects.length }})</p>
         <span class="muted">Precios por hora de servicio</span>
       </div>
 
       <div class="results-list">
-        <div
-          v-for="teacher in teachers"
-          :key="teacher.id"
-          class="crm-item"
-          :class="{ active: selectedTeacher?.id === teacher.id }"
-          @click="selectTeacher(teacher)"
-        >
-          <img :src="teacher.img" alt="foto" class="avatar" />
-          <div class="info">
-            <p class="name">{{ teacher.name }}</p>
-            <p class="subject">
-              {{ teacher.subject }} · {{ teacher.description }}
-            </p>
+        <div v-if="loading">
+          <div v-for="n in 5" :key="n" class="crm-item skeleton">
+            <div class="avatar skltn"></div>
+            <div class="info">
+              <p class="name skltn skltn-text"></p>
+              <p class="subject skltn skltn-text"></p>
+            </div>
+            <div class="meta">
+              <div class="price skltn skltn-text"></div>
+            </div>
           </div>
+        </div>
 
-          <div class="meta">
-            <div class="price">${{ teacher.price.toLocaleString() }}</div>
-            <div class="chev">›</div>
+        <div v-else>
+          <div
+            v-for="subject in subjects"
+            :key="subject.id"
+            class="crm-item"
+            :class="{ active: selectedSubject?.id === subject.id }"
+            @click="selectTeacher(subject)"
+          >
+            <img
+              v-if="subject.img"
+              :src="subject.img"
+              alt="foto"
+              class="avatar"
+            />
+            <p
+              class="letter-name-tutor"
+              :style="{ backgroundColor: stringToHexColor(subject.tutor.name) }"
+              v-if="!subject.tutor.img"
+            >
+              {{ subject.tutor.name[0] }}
+            </p>
+            <div class="info">
+              <p class="name">{{ subject.tutor.name }}</p>
+              <p class="subject">
+                {{ subject.name }} · {{ subject.description }}
+              </p>
+            </div>
+            <div class="meta">
+              <div class="price">${{ subject.price.toLocaleString() }}</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="pagination">
+      <!-- <div class="pagination">
         <button class="page-btn" :disabled="page === 1" @click="page--">
           ‹
         </button>
         <span class="page-num">{{ page }}</span>
         <button class="page-btn" @click="page++">›</button>
-      </div>
+      </div> -->
     </aside>
 
-    <main class="crm-detail" v-if="selectedTeacher">
+    <main class="crm-detail" v-if="selectedSubject">
       <header class="detail-header">
         <div class="header-top">
           <span class="tag">Precios por hora de servicio</span>
           <span class="dot">·</span>
-          <span class="salary">{{ Number(selectedTeacher.price) }} / hr</span>
-          <span class="date">Jueves 12 sept, 4:17 p. m.</span>
+          <span class="salary"
+            >{{ currencyPipe.transformCurrency(selectedSubject.price) }} /
+            hr</span
+          >
+          <!-- <span class="date">Jueves 12 sept, 4:17 p. m.</span> -->
         </div>
 
         <div class="header-main">
-          <h2 class="name-main">{{ selectedTeacher.name }}</h2>
+          <h2 class="name-main">{{ selectedSubject.name }}</h2>
 
           <div class="header-actions">
             <button
               class="btn-primary"
               :disabled="!startDate"
-              @click="redirectPayment()"
+              @click="createBooking()"
             >
               Reservar clase
             </button>
 
-            <button class="btn-ghost" @click="redirectProfile">
+            <!-- <button class="btn-ghost" @click="redirectProfile">
               Ver perfil
-            </button>
+            </button> -->
           </div>
         </div>
       </header>
@@ -72,7 +100,7 @@
           @click="selectTab('information')"
           :class="{ active: selectedTab == 'information' }"
         >
-          Información
+          General
         </button>
         <button
           class="tab"
@@ -85,32 +113,55 @@
 
       <section class="contact-info" v-if="selectedTab == 'information'">
         <div class="left-col">
-          <div class="info-item">
+          <!-- <div class="info-item">
             <span class="label">Disponibilidad</span>
             <span class="value badge-green">
               Completo <strong>100%</strong>
             </span>
-          </div>
+          </div> -->
 
           <div class="info-item">
             <span class="label">Teléfono</span>
-            <span class="value">{{ selectedTeacher.phone }}</span>
+            <span class="value">{{ selectedSubject.tutor.phone }}</span>
           </div>
 
           <div class="info-item">
             <span class="label">Correo</span>
             <div class="email-field">
-              <span>{{ selectedTeacher.email }}</span>
+              <span>{{ selectedSubject.tutor.email }}</span>
               <div class="icons">
                 <button
                   title="Copiar"
                   class="icon-btn"
-                  @click="copyEmail(selectedTeacher.email)"
+                  @click="copyEmail(selectedSubject.tutor.email)"
                 >
                   <span class="material-icons-outlined">copy</span>
                 </button>
               </div>
             </div>
+          </div>
+          <div class="info-item">
+            <span class="label">Reputación</span>
+            <span class="value">
+              {{ getStars(selectedSubject.tutor.reputation?.rating || 0) }}
+              ({{ selectedSubject.tutor.reputation?.rating || 0 }})
+            </span>
+          </div>
+
+          <div class="info-item">
+            <span class="label">Ubicación</span>
+            <span class="value">
+              {{
+                selectedSubject.tutor.location?.city || "Ciudad no disponible"
+              }},
+              {{
+                selectedSubject.tutor.location?.country || "País no disponible"
+              }}
+            </span>
+          </div>
+
+          <div class="type-meet">
+            <span>Elige la información para tu reserva</span>
           </div>
         </div>
         <div class="right-col">
@@ -146,76 +197,37 @@
 </template>
 
 <script>
+import { currencyPipe } from "@/pipes/subjects-pipe";
 import CalendarMonth from "@/shared/components/CalendarMonth.vue";
 import ScheduleView from "@/shared/components/ScheduleView.vue";
+import { useSearchStore } from "@/stores/searchStore";
+import { ref } from "vue";
+import { useRoute } from "vue-router";
+
+const searchs = useSearchStore();
 
 export default {
   name: "CrmCombined",
+
   components: {
     CalendarMonth,
     ScheduleView,
   },
+
   data() {
     return {
       page: 1,
-      selectedTeacher: null,
-      teachers: [
-        {
-          id: 1,
-          name: "Laura Gómez",
-          description: "Educación Superior",
-          subject: "Matemáticas",
-          price: 35000,
-          img: "https://randomuser.me/api/portraits/women/44.jpg",
-          phone: "+57 310 458 9276",
-          email: "laura.gomez@teacher.com",
-        },
-        {
-          id: 2,
-          name: "Carlos Ramírez",
-          description: "Secundaria",
-          subject: "Física",
-          price: 40000,
-          img: "https://randomuser.me/api/portraits/men/32.jpg",
-          phone: "+57 301 722 6435",
-          email: "carlos.ramirez@teacher.com",
-        },
-        {
-          id: 3,
-          name: "Ana Torres",
-          description: "Primaria",
-          subject: "Lengua y Literatura",
-          price: 30000,
-          img: "https://randomuser.me/api/portraits/women/68.jpg",
-          phone: "+57 315 839 2471",
-          email: "ana.torres@teacher.com",
-        },
-        {
-          id: 4,
-          name: "Julián Pérez",
-          description: "Primaria",
-          subject: "Informática",
-          price: 45000,
-          img: "https://randomuser.me/api/portraits/men/12.jpg",
-          phone: "+57 316 204 5539",
-          email: "julian.perez@teacher.com",
-        },
-        {
-          id: 5,
-          name: "Sofía Hernández",
-          description: "Educación Superior",
-          subject: "Inglés",
-          price: 38000,
-          img: "https://randomuser.me/api/portraits/women/26.jpg",
-          phone: "+57 320 994 3178",
-          email: "sofia.hernandez@teacher.com",
-        },
-      ],
-
+      selectedSubject: null,
+      subjects: [],
       startDate: null,
       endDate: null,
       today: new Date(),
       selectedTab: "information",
+      loading: true,
+      currencyPipe: new currencyPipe(),
+      result: ref(""),
+      AUTH_TOKEN:
+        "eyJraWQiOiIxY2UxZTEzNjE3ZGNmNzY2YjNjZWJjY2Y4ZGM1YmFmYThhNjVlNjg0MDIzZjdjMzJiZTgzNDliMjM4MDEzNWI0IiwidHlwIjoiUEFUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2F1dGguY2FsZW5kbHkuY29tIiwiaWF0IjoxNzYzNTI3MjUzLCJqdGkiOiI2MTYwNDUwZi01ZGYyLTRhYmYtYmFlYS1jMGY5OWVkYWM3MmYiLCJ1c2VyX3V1aWQiOiI5ZmUxMmVjNC05MWZiLTQ1ODItYTBiMS0zMjE2ODhkMjQ0MjkifQ.pPdQ8xs6INuM89DvQc8YY7ZOlrq8nSVjq2gt8TWLby-XCFNZj4h21S-MM10pXB84G0X2q5oE_ovIh92MjBMJMw",
       tutorAvailabilities: [
         {
           _id: "a1",
@@ -251,24 +263,235 @@ export default {
           startTime: "13:00",
           endTime: "17:00",
           isRecurring: true,
-          active: false, 
+          active: false,
         },
       ],
     };
   },
-  mounted() {
-    this.selectedTeacher = this.teachers[0];
+
+  setup() {
+    const route = useRoute();
+    return { route };
+  },
+
+  async mounted() {
+    const searchs = useSearchStore();
+    const q = this.$route.query.q || "";
+
+    if (searchs.results.length > 0) {
+      this.subjects = searchs.results;
+      this.selectedSubject = this.subjects[0];
+      this.loading = false;
+    } else {
+      await this.handleSearch(q);
+    }
+
+    searchs.$subscribe((mutation, state) => {
+      this.subjects = state.results;
+
+      if (
+        !this.selectedSubject ||
+        this.selectedSubject.id !== state.results[0]?.id
+      ) {
+        this.selectedSubject = state.results[0] || null;
+      }
+
+      this.loading = state.results.length === 0;
+    });
   },
   methods: {
     selectTeacher(teacher) {
-      this.selectedTeacher = teacher;
+      this.selectedSubject = teacher;
     },
+
+    /**
+     * Obtiene el UUID del usuario asociado al token PAT.
+     * @returns {string|null} El UUID del usuario o null si falla.
+     */
+    async getMyCalendlyUserUUID() {
+      try {
+        const response = await fetch("https://api.calendly.com/users/me", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.AUTH_TOKEN}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error al obtener el UUID:", errorData);
+          return null;
+        }
+
+        const data = await response.json();
+        return data.resource.uri.split("/").pop();
+      } catch (error) {
+        console.error(
+          "Error de red o desconocido en getMyCalendlyUserUUID:",
+          error
+        );
+        return null;
+      }
+    },
+
+    /**
+     * Obtiene el URI del primer tipo de evento configurado para el usuario.
+     * @param {string} tutorUUID - El UUID del usuario propietario.
+     * @returns {string|null} El URI del tipo de evento o null si no hay eventos.
+     */
+    async getEventTypesForUser(tutorUUID) {
+      const userURI = `https://api.calendly.com/users/${tutorUUID}`;
+
+      try {
+        const response = await fetch(
+          `https://api.calendly.com/event_types?user=${userURI}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.AUTH_TOKEN}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error al obtener Event Types:", errorData);
+          throw new Error("No se pudo obtener la lista de tipos de evento.");
+        }
+
+        const data = await response.json();
+
+        if (data.collection.length > 0) {
+          return data.collection[0].uri;
+        }
+        return null;
+      } catch (error) {
+        console.error("Error en getEventTypesForUser:", error);
+        return null;
+      }
+    },
+
+
+    async createBooking() {
+      const booking = {
+        studentId: "60c72bf0",
+        subjectId: "60c72bf2",
+        type: "virtual",
+        location: "Google Meet",
+        status: "pending",
+        date: "2025-11-15T14:00:00.000Z",
+        endDate: "2025-11-15T15:00:00.000Z",
+        price: 50000,
+      };
+
+      const tutorUUID = await this.getMyCalendlyUserUUID();
+
+      if (!tutorUUID) {
+        this.result.value = "Error: Falló la obtención del UUID del tutor. No se puede continuar.";
+        return;
+      }
+
+      const eventTypeURI = await this.getEventTypesForUser(tutorUUID);
+
+      if (!eventTypeURI) {
+        this.result.value =
+          "Error: No se encontró ningún tipo de evento (Event Type) para este tutor. El usuario debe crear uno en Calendly.";
+        return;
+      }
+
+      const requestBody = {
+        name: "Clase de prueba",
+        start_time: booking.date,
+        end_time: booking.endDate,
+        location: booking.location,
+        invitees: [
+          { email: "maldonado2023samu@gmail.com", name: "Samuel Maldonado" },
+        ],
+        owner: `https://api.calendly.com/users/${tutorUUID}`,
+        event_type: eventTypeURI,
+      };
+
+      try {
+        const response = await fetch(
+          "https://api.calendly.com/scheduled_events",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${this.AUTH_TOKEN}`,
+            },
+            body: JSON.stringify(requestBody),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(JSON.stringify(errorData, null, 2));
+        }
+
+        const data = await response.json();
+        this.result.value = JSON.stringify(data, null, 2);
+      } catch (error) {
+        this.result.value = `Error: ${error.message}`;
+
+        try {
+          const parsedError = JSON.parse(error.message);
+          this.result.value = JSON.stringify(parsedError, null, 2);
+        } catch {
+          this.result.value = `Error: ${error.message}`;
+        }
+      }
+    },
+
+    getStars(rating) {
+      const fullStars = Math.floor(rating);
+      const halfStar = rating - fullStars >= 0.5 ? 1 : 0;
+      const emptyStars = 5 - fullStars - halfStar;
+
+      return (
+        "⭐".repeat(fullStars) + (halfStar ? "☆" : "") + "☆".repeat(emptyStars)
+      );
+    },
+
+    async handleSearch(query) {
+      const cleanQuery = query.trim();
+
+      if (!cleanQuery) {
+        searchs.clear();
+        return;
+      }
+
+      await searchs.search(cleanQuery);
+
+      if (searchs.results.length > 0) {
+        this.loading = false;
+        this.subjects = searchs.results;
+        this.selectedSubject = searchs.results[0];
+      }
+    },
+
+    stringToHexColor(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+
+      const hue = Math.abs(hash) % 360;
+
+      const saturation = 60;
+      const lightness = 85;
+
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    },
+
     redirectPayment() {
       this.$router.push("/payment");
     },
 
     redirectProfile() {
-      this.$router.push(`/profile/${this.selectedTeacher?.id}`);
+      this.$router.push(`/profile/${this.selectedSubject?.id}`);
     },
 
     selectTab(tab) {
@@ -280,19 +503,14 @@ export default {
         alert("Correo copiado: " + email);
       });
     },
+
     onDateSelected(date) {
-      // Acá validamos que sino hay fecha de inicio o ya hay un rango completo, reinicia
       if (!this.startDate || (this.startDate && this.endDate)) {
         this.startDate = date;
         this.endDate = null;
-      }
-      // En este bloque si ya hay inicio y la nueva es después, define el fin
-      else if (this.startDate && !this.endDate && date > this.startDate) {
+      } else if (this.startDate && !this.endDate && date > this.startDate) {
         this.endDate = date;
-      }
-
-      // Si la nueva es antes, se reinicia
-      else {
+      } else {
         this.startDate = date;
         this.endDate = null;
       }
@@ -304,14 +522,14 @@ export default {
       });
 
       const tutorInfo = {
-        id: this.selectedTeacher.id,
-        name: this.selectedTeacher.name,
-        subject: this.selectedTeacher.subject,
-        description: this.selectedTeacher.description,
-        price: this.selectedTeacher.price,
-        img: this.selectedTeacher.img,
-        email: this.selectedTeacher.email,
-        phone: this.selectedTeacher.phone,
+        id: this.selectedSubject.id,
+        name: this.selectedSubject.name,
+        subject: this.selectedSubject.subject,
+        description: this.selectedSubject.description,
+        price: this.selectedSubject.price,
+        img: this.selectedSubject.img,
+        email: this.selectedSubject.email,
+        phone: this.selectedSubject.phone,
         date: formattedDate,
       };
 
@@ -395,6 +613,16 @@ export default {
   object-fit: cover;
 }
 
+.letter-name-tutor {
+  min-width: 40px;
+  min-height: 40px;
+  clip-path: circle();
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
 .info {
   flex: 1;
 }
@@ -462,6 +690,16 @@ export default {
   font-weight: 600;
 }
 
+.type-meet {
+  padding: 20px 10px;
+}
+
+.type-meet span {
+  color: #4b63ff;
+  font-weight: 700;
+  font-size: 16px;
+}
+
 .detail-header {
   border-bottom: 1px solid #eef2f6;
   padding-bottom: 16px;
@@ -501,7 +739,7 @@ export default {
 }
 .name-main {
   margin: 0;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 700;
   color: #0f172a;
 }
@@ -538,8 +776,9 @@ export default {
 }
 
 .contact-info {
-  display: grid;
-  grid-template-columns: 1fr 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
   gap: 20px;
   margin-top: 18px;
 }
@@ -556,7 +795,10 @@ export default {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: 8px;
+}
+
+.left-col .info-item:last-of-type {
+  border-bottom: 1px solid rgb(228, 228, 228);
 }
 
 .left-col .info-item label {
@@ -664,6 +906,7 @@ export default {
   color: #6b7280;
   cursor: pointer;
   position: relative;
+  font-size: 12px;
 }
 .tab.active {
   color: #4b63ff;
