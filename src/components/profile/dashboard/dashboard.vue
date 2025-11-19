@@ -1,36 +1,39 @@
 <template>
   <template v-if="dashboardStore.isLoading">
-    <div class="cards">
-
-      <div v-for="n in 4" :key="n">
-        <Cards :skeleton="true" />
-      </div>
+    <div class="stats-cards">
+      <StatsCards v-for="n in 4" :key="n" :skeleton="true" />
     </div>
   </template>
   <template v-else>
-    <div class="cards">
-
-      <Cards title="Estudiantes" :value="dashboardStore.dashboard.students.toString()"
+    <div class="stats-cards">
+      <StatsCards title="Estudiantes" :value="dashboardStore.dashboard.students.toString()"
         :indicator-num="dashboardStore.dashboard.diferenceStudents" subtitle="Alumnos Atendidos" />
-      <Cards title="Ingresos" :value=formatCurrency(dashboardStore.dashboard.income)
+      <StatsCards title="Ingresos" :value=formatCurrency(dashboardStore.dashboard.income)
         :indicator-icon="dashboardStore.dashboard.diferenceIncomePercentage >= 0 ? 'call_made' : 'call_received'"
         :indicator-num="dashboardStore.dashboard.diferenceIncomePercentage" subtitle="Ganancias obtenidas" />
-      <Cards title="Clases Canceladas" :value="dashboardStore.dashboard.canceledClasses.toString()"
+      <StatsCards title="Clases Canceladas" :value="dashboardStore.dashboard.canceledClasses.toString()"
         :indicator-num="dashboardStore.dashboard.diferenceCanceledClasses" :invert-condition-value="true"
         subtitle="Sesiones no realizadas" />
-      <Cards title="Solicitudes pendientes" :value="dashboardStore.dashboard.pendingRequests.toString()"
+      <StatsCards title="Solicitudes pendientes" :value="dashboardStore.dashboard.pendingRequests.toString()"
         indicator-icon="visibility" subtitle="Reservas en espera" />
     </div>
   </template>
 
-  <!-- <div class="highlight">
-        <p>
-        {{ currentUser.name }} está disponible para tutorías en
-        <strong>{{ tutor.subject }}</strong
-        >.
-        </p>
-        <button class="primary">Agendar tutoría</button>
-    </div> -->
+  <div class="content-bottom">
+      <template v-if="dashboardStore.isLoading">
+        <div class="bookings-cards">
+          <div v-for="n in 2" :key="n">
+            <BookingsCards :skeleton="true" />
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <div class="bookings-cards">
+          <BookingsCards />
+          <BookingsCards />
+        </div>
+      </template>
+  </div>
 
 </template>
 
@@ -39,7 +42,8 @@ import { onMounted } from "vue";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useDashboardSync } from "@/composables/useDashboardSync";
 import { useUserStore } from "@/stores/userStore";
-import Cards from "./cards.vue";
+import StatsCards from "./statsCards.vue";
+import BookingsCards from "./bookingsCards.vue";
 
 const dashboardStore = useDashboardStore();
 const userStore = useUserStore();
@@ -69,8 +73,19 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.cards {
+.stats-cards {
   display: flex;
   gap: 20px;
+}
+.content-bottom {
+  display: flex;
+}
+
+.bookings-cards {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;  
+  width: 25%;
 }
 </style>

@@ -7,7 +7,7 @@ import { useErrorHandler, useSuccessHandler } from '@/composables/useAlertsHandl
 
 export const useDashboardStore = defineStore('dashboard', {
   state: () => ({
-    dashboard: null as DashboardType | null,
+    dashboard: null as Partial<DashboardType> | null,
     isLoading: true,
     loadedTutorId: null as string | null
   }),
@@ -30,8 +30,6 @@ export const useDashboardStore = defineStore('dashboard', {
             this.dashboard = data;
             this.loadedTutorId = tutorId;
 
-
-            handleSuccess('Dashboard actualizado');
         } catch (error) {
             handleError(error);
         } finally {

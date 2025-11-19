@@ -1,7 +1,9 @@
 import { useAppStore } from "@/stores/appStore";
+import { useAuthStore } from "@/stores/authStore";
 
 export function useErrorHandler() {
   const appStore = useAppStore();
+  const authStore = useAuthStore();
 
   function handleError(error: any, defaultMessage = "Ocurrió un error inesperado") {
     const message =
@@ -11,6 +13,9 @@ export function useErrorHandler() {
       defaultMessage;
 
     appStore.setError(message);
+    if (error.response.status === 401) {
+      authStore.restoreSession();
+    }
   }
 
   return { handleError };

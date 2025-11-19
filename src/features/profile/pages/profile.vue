@@ -3,8 +3,6 @@
     <div class="spinner"></div>
   </div>
 
-  <div v-else-if="!currentUser" class="not-found">No se encontró el usuario.</div>
-
   <div v-else class="dashboard">
     <aside class="sidebar">
       <button class="back" @click="goBack">← Volver</button>
@@ -46,11 +44,15 @@
         </button>
       </nav>
 
-      <section v-if="activeTab === 'Resumen'" class="section">
+      <section v-if="activeTab === 'Resumen'" class="section resume-section">
         <Dashboard/>
       </section>
+      
+      <section v-else-if="activeTab === 'Materias a Impartir'" class="section subjects-section">
+        <Subjects :tutor-id="currentUser._id" />
+      </section>
 
-      <section v-else-if="activeTab === 'Actividades'" class="section">
+      <section v-else-if="activeTab === 'Disponibilidad'" class="section">
         <h3>Actividades recientes</h3>
         <ul class="activity-timeline">
           <li v-for="(a, i) in activities" :key="i" class="activity-item">
@@ -67,9 +69,6 @@
       </section>
 
       
-    <section v-else-if="activeTab === 'Materias a Impartir'" class="section subjects-section">
-      <Subjects :tutor-id="currentUser._id" />
-    </section>
     
       
 
@@ -109,9 +108,8 @@ const usersStore = useUserStore();
 const { currentUser } = storeToRefs(usersStore);
 
 
-const tutor = ref({});
 const activeTab = ref("Resumen");
-const tabs = ["Resumen", "Materias a Impartir", "Actividades", "Documentos"];
+const tabs = ["Resumen", "Materias a Impartir", "Disponibilidad", "Documentos"];
 
 const activities = ref([
   {
@@ -148,12 +146,14 @@ function handleLogout() {
 
 
 onMounted(async () => {
-  
+  if (!currentUser.value ) {
+    await auth.restoreSession()
+  }
 });
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 .dashboard {
   display: flex;
@@ -301,68 +301,10 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.cards {
+.resume-section {
   display: flex;
+  flex-direction: column;
   gap: 20px;
-}
-.card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  flex: 1;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-}
-.card h3 {
-  font-size: 15px;
-  color: #222;
-  margin-bottom: 10px;
-}
-
-.value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.value h2 {
-  font-size: 48px;
-  font-weight: 600;
-  color: #222;
-}
-
-.value .indicator {
-  border-radius: 50%;
-  padding: 5px 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.value .indicator span {
-  font-weight: 800;
-  font-size: 12px;
-}
-
-.value .indicator.positive {
-  background-color: #DCF4F0;
-  color: #08B294;
-}
-
-.value .indicator.negative {
-  background-color: #FCDCDB;
-  color: #EE332D;
-}
-
-.value .indicator.warning {
-  background-color: #FCFAE3;
-  color: #CEBD00;
-}
-
-.card p {
-  font-size: 13px;
-  font-weight: 200;
-  color: #222;
-
 }
 
 .progress-bar {

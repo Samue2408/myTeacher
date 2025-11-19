@@ -97,7 +97,7 @@ const $props = defineProps({
 
 .value h2 {
   font-size: 48px;
-  font-weight: 600;
+  font-weight: 700;
   color: #222;
 }
 
@@ -110,7 +110,7 @@ const $props = defineProps({
 }
 
 .value .indicator span {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12px;
 }
 

@@ -39,7 +39,7 @@ const goToRegister = () => router.push({ path: "/user/signup" })
 main {  
   background: linear-gradient(
       180deg,
-      rgb(83, 126, 213) 0%,
+      var(--color-primary) 0%,
       rgba(83, 127, 213, 0.2) 15%,
       var(--color-bg) 30%
     );
@@ -210,7 +210,7 @@ canvas {
   main {  
     background: linear-gradient(
         180deg,
-        rgb(83, 126, 213) 0%,
+        var(--color-primary) 0%,
         rgba(83, 127, 213, 0.2) 35%,
 
         var(--color-bg) 95%

@@ -4,7 +4,8 @@ import { LoginCredentials, TokenUser } from '@/types/auth'
 import { jwtDecode } from "jwt-decode";
 import { useUserStore } from './userStore';
 import { useSubjectsStore } from './subjectStore';
-import { useRouter } from "vue-router";
+import router from "@/router";
+import { useDashboardStore } from './dashboardStore';
 
 interface AuthState {
   isAuthenticated: boolean
@@ -57,8 +58,7 @@ export const useAuthStore = defineStore('auth', {
         } catch {
           this.showSessionClosedModal = true
           this.logout();
-          const router = useRouter();
-          router.push({path: '/user'})
+          router.push('/user')
         }
       }
     },
@@ -70,7 +70,10 @@ export const useAuthStore = defineStore('auth', {
 
       const userStore = useUserStore();
       const subjectStore = useSubjectsStore();
+      const dashboardStore = useDashboardStore()
+
       subjectStore.$reset()
+      dashboardStore.$reset()
       userStore.clearUser();
 
     },
