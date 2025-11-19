@@ -289,9 +289,7 @@ export default {
     searchs.$subscribe((mutation, state) => {
       this.subjects = state.results;
 
-      if (
-        !this.selectedSubject ||
-        this.selectedSubject.id !== state.results[0]?.id
+      if (!this.selectedSubject ||this.selectedSubject.id !== state.results[0]?.id
       ) {
         this.selectedSubject = state.results[0] || null;
       }
