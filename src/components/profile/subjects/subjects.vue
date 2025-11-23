@@ -1,7 +1,7 @@
 <template>
     <div class="header">
         <h3>Soy tutor de estas materias</h3>
-        <button @click="modalAddUpdate=true">Agregar <span class="add material-icons">add</span></button>
+        <button @click="modalAddUpdate=true">Agregar</button>
     </div>
     <div class="subjects-grid">
         <template v-if="loading">
@@ -120,7 +120,7 @@ onMounted(async () => {
     gap: 5px;
     color: white;
     font-size: 14px;
-    padding: 5px 8px;
+    padding: 12px;
     background-color: #08B294;
     border-radius: 6px;
 }
