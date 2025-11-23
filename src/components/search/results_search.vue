@@ -94,7 +94,7 @@
         </div>
       </header>
 
-      <nav class="tabs">
+      <!-- <nav class="tabs">
         <button
           class="tab"
           @click="selectTab('information')"
@@ -109,7 +109,7 @@
         >
           Horario de Disponibilidad
         </button>
-      </nav>
+      </nav> -->
 
       <section class="contact-info" v-if="selectedTab == 'information'">
         <div class="left-col">
@@ -167,10 +167,6 @@
         <div class="right-col">
           <div class="calendar-section">
             <CalendarMonth
-              :tooltips="{
-                '2025-11-04': 'Evento importante',
-                '2025-11-05': 'Entrega de proyecto',
-              }"
               @dateSelected="onDateSelected"
             />
           </div>
@@ -179,11 +175,10 @@
 
       <div class="calendar-availability" v-if="selectedTab == 'availability'">
         <ScheduleView
-          :availabilities="tutorAvailabilities"
-          :highlightedDates="['2025-03-14', '2025-03-18']"
-          tutor-id="6712abf4e5a01cc4c8a61b09"
+          :availabilities="selectedSubject?.tutor?.availabilities"
+          :tutor-id="selectedSubject?.tutor?.id"
           view-mode="week"
-          start-date="2025-03-11"
+          :start-date="selectedSubject ? today : null"
         />
       </div>
     </main>
@@ -197,14 +192,14 @@
 </template>
 
 <script>
+import { BookingsService } from "@/api/bookings.service";
 import { currencyPipe } from "@/pipes/subjects-pipe";
 import CalendarMonth from "@/shared/components/CalendarMonth.vue";
 import ScheduleView from "@/shared/components/ScheduleView.vue";
 import { useSearchStore } from "@/stores/searchStore";
+import { useUserStore } from "@/stores/userStore";
 import { ref } from "vue";
 import { useRoute } from "vue-router";
-
-const searchs = useSearchStore();
 
 export default {
   name: "CrmCombined",
@@ -226,46 +221,8 @@ export default {
       loading: true,
       currencyPipe: new currencyPipe(),
       result: ref(""),
-      AUTH_TOKEN:
-        "eyJraWQiOiIxY2UxZTEzNjE3ZGNmNzY2YjNjZWJjY2Y4ZGM1YmFmYThhNjVlNjg0MDIzZjdjMzJiZTgzNDliMjM4MDEzNWI0IiwidHlwIjoiUEFUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJodHRwczovL2F1dGguY2FsZW5kbHkuY29tIiwiaWF0IjoxNzYzNTI3MjUzLCJqdGkiOiI2MTYwNDUwZi01ZGYyLTRhYmYtYmFlYS1jMGY5OWVkYWM3MmYiLCJ1c2VyX3V1aWQiOiI5ZmUxMmVjNC05MWZiLTQ1ODItYTBiMS0zMjE2ODhkMjQ0MjkifQ.pPdQ8xs6INuM89DvQc8YY7ZOlrq8nSVjq2gt8TWLby-XCFNZj4h21S-MM10pXB84G0X2q5oE_ovIh92MjBMJMw",
-      tutorAvailabilities: [
-        {
-          _id: "a1",
-          tutorId: "6712abf4e5a01cc4c8a61b09",
-          date: "2025-03-11",
-          startTime: "08:00",
-          endTime: "12:00",
-          isRecurring: false,
-          active: true,
-        },
-        {
-          _id: "a2",
-          tutorId: "6712abf4e5a01cc4c8a61b09",
-          date: "2025-03-14",
-          startTime: "14:00",
-          endTime: "18:00",
-          isRecurring: false,
-          active: true,
-        },
-        {
-          _id: "a3",
-          tutorId: "6712abf4e5a01cc4c8a61b09",
-          dayOfWeek: "Monday",
-          startTime: "09:00",
-          endTime: "11:00",
-          isRecurring: true,
-          active: true,
-        },
-        {
-          _id: "a4",
-          tutorId: "6712abf4e5a01cc4c8a61b09",
-          dayOfWeek: "Wednesday",
-          startTime: "13:00",
-          endTime: "17:00",
-          isRecurring: true,
-          active: false,
-        },
-      ],
+      tutorAvailabilities: [],
+      sendDate: null,
     };
   },
 
@@ -282,164 +239,50 @@ export default {
       this.subjects = searchs.results;
       this.selectedSubject = this.subjects[0];
       this.loading = false;
+      
     } else {
       await this.handleSearch(q);
     }
 
     searchs.$subscribe((mutation, state) => {
       this.subjects = state.results;
-
-      if (!this.selectedSubject ||this.selectedSubject.id !== state.results[0]?.id
-      ) {
-        this.selectedSubject = state.results[0] || null;
+      
+      if (!this.selectedSubject || this.selectedSubject.id !== state.results[0]?.id) {
+        this.selectedSubject = state.results[0] || null;        
       }
 
       this.loading = state.results.length === 0;
     });
   },
+
   methods: {
     selectTeacher(teacher) {
-      this.selectedSubject = teacher;
+      this.selectedSubject = teacher;      
     },
-
-    /**
-     * Obtiene el UUID del usuario asociado al token PAT.
-     * @returns {string|null} El UUID del usuario o null si falla.
-     */
-    async getMyCalendlyUserUUID() {
-      try {
-        const response = await fetch("https://api.calendly.com/users/me", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.AUTH_TOKEN}`,
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Error al obtener el UUID:", errorData);
-          return null;
-        }
-
-        const data = await response.json();
-        return data.resource.uri.split("/").pop();
-      } catch (error) {
-        console.error(
-          "Error de red o desconocido en getMyCalendlyUserUUID:",
-          error
-        );
-        return null;
-      }
-    },
-
-    /**
-     * Obtiene el URI del primer tipo de evento configurado para el usuario.
-     * @param {string} tutorUUID - El UUID del usuario propietario.
-     * @returns {string|null} El URI del tipo de evento o null si no hay eventos.
-     */
-    async getEventTypesForUser(tutorUUID) {
-      const userURI = `https://api.calendly.com/users/${tutorUUID}`;
-
-      try {
-        const response = await fetch(
-          `https://api.calendly.com/event_types?user=${userURI}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${this.AUTH_TOKEN}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Error al obtener Event Types:", errorData);
-          throw new Error("No se pudo obtener la lista de tipos de evento.");
-        }
-
-        const data = await response.json();
-
-        if (data.collection.length > 0) {
-          return data.collection[0].uri;
-        }
-        return null;
-      } catch (error) {
-        console.error("Error en getEventTypesForUser:", error);
-        return null;
-      }
-    },
-
 
     async createBooking() {
-      const booking = {
-        studentId: "60c72bf0",
-        subjectId: "60c72bf2",
-        type: "virtual",
-        location: "Google Meet",
-        status: "pending",
-        date: "2025-11-15T14:00:00.000Z",
-        endDate: "2025-11-15T15:00:00.000Z",
-        price: 50000,
-      };
-
-      const tutorUUID = await this.getMyCalendlyUserUUID();
-
-      if (!tutorUUID) {
-        this.result.value = "Error: Falló la obtención del UUID del tutor. No se puede continuar.";
-        return;
-      }
-
-      const eventTypeURI = await this.getEventTypesForUser(tutorUUID);
-
-      if (!eventTypeURI) {
-        this.result.value =
-          "Error: No se encontró ningún tipo de evento (Event Type) para este tutor. El usuario debe crear uno en Calendly.";
-        return;
-      }
-
-      const requestBody = {
-        name: "Clase de prueba",
-        start_time: booking.date,
-        end_time: booking.endDate,
-        location: booking.location,
-        invitees: [
-          { email: "maldonado2023samu@gmail.com", name: "Samuel Maldonado" },
-        ],
-        owner: `https://api.calendly.com/users/${tutorUUID}`,
-        event_type: eventTypeURI,
-      };
-
       try {
-        const response = await fetch(
-          "https://api.calendly.com/scheduled_events",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${this.AUTH_TOKEN}`,
-            },
-            body: JSON.stringify(requestBody),
-          }
-        );
+        const booking = {
+          studentId: useUserStore().userId,
+          tutorId: this.selectedSubject.tutor.id,
+          subjectId: this.selectedSubject.id,
+          type: "virtual",
+          location: "virtual",
+          status: "Pendiente",
+          date: this.startDate,
+          startTime: "14:00",
+          endTime: "18:00",
+          price: this.selectedSubject.price,
+        };
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(JSON.stringify(errorData, null, 2));
-        }
+        const response = await BookingsService.createBooking(JSON.stringify(booking));
 
-        const data = await response.json();
-        this.result.value = JSON.stringify(data, null, 2);
+        console.log(response);
+        
+
+        // this.result.value = JSON.stringify(response, null, 2);
       } catch (error) {
-        this.result.value = `Error: ${error.message}`;
-
-        try {
-          const parsedError = JSON.parse(error.message);
-          this.result.value = JSON.stringify(parsedError, null, 2);
-        } catch {
-          this.result.value = `Error: ${error.message}`;
-        }
+        // this.result.value = JSON.stringify(error, null, 2);
       }
     },
 
@@ -457,16 +300,18 @@ export default {
       const cleanQuery = query.trim();
 
       if (!cleanQuery) {
-        searchs.clear();
+        useSearchStore().clear();
         return;
       }
 
-      await searchs.search(cleanQuery);
+      await useSearchStore().search(cleanQuery);
 
-      if (searchs.results.length > 0) {
+      const results = useSearchStore().results;
+
+      if (results.length > 0) {
         this.loading = false;
-        this.subjects = searchs.results;
-        this.selectedSubject = searchs.results[0];
+        this.subjects = results;
+        this.selectedSubject = results[0];        
       }
     },
 
@@ -477,7 +322,6 @@ export default {
       }
 
       const hue = Math.abs(hash) % 360;
-
       const saturation = 60;
       const lightness = 85;
 
@@ -519,6 +363,9 @@ export default {
         year: "numeric",
       });
 
+
+      this.sendDate = formattedDate;
+
       const tutorInfo = {
         id: this.selectedSubject.id,
         name: this.selectedSubject.name,
@@ -536,6 +383,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .crm-container {

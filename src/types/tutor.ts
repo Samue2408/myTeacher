@@ -1,5 +1,5 @@
 export interface Tutor {
-  id: number
+  id: string
   name: string
   balance: number
   email: string
@@ -12,6 +12,17 @@ export interface Tutor {
   description: string
   img: string
   reputation: Reputacion
+  availabilities: Availabilities[];
+}
+
+interface Availabilities{
+  id: string;
+  tutorId: string;
+  startTime: string;
+  endTime: string;
+  isRecurring: boolean;
+  dayOfWeek: string; 
+  active: boolean;
 }
 
 interface Reputacion{

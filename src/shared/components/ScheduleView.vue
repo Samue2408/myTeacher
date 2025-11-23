@@ -15,7 +15,7 @@
         :class="{
           'schedule__day--selected': selectedDay === day.date,
           'schedule__day--highlighted': day.isHighlighted,
-          'schedule__day--today': isToday(day.date)
+          'schedule__day--today': isToday(day.date),
         }"
         @click="onDayClick(day, $event)"
         @mouseenter="onDayEnter(day, $event)"
@@ -28,39 +28,19 @@
       </div>
     </section>
 
-    <div
-      v-if="tooltip.visible"
-      class="tooltip"
-      :style="{
-        top: tooltip.top + 'px',
-        left: tooltip.left + 'px',
-        transform: 'translateX(-50%) translateY(-8px)'
-      }"
-      aria-hidden="false"
-    >
-      <div class="tooltip-inner">
-        <div class="tooltip-title">{{ tooltip.title }}</div>
-        <!-- <div class="tooltip-sub">
-          {{ tooltip.count }}
-        </div> -->
-      </div>
-      <div class="tooltip-arrow" />
-    </div>
-
     <section class="schedule__list">
       <article
         v-for="block in filteredAvailabilities"
         :key="block._id"
         class="event"
-        :class="{ 'event--inactive': !block.active }"
         :style="{
-          backgroundColor: block.active ? '#e9f5ee' : '#f2f2f2',
-          borderLeft: block.active ? '4px solid #1abc9c' : '4px solid #ccc'
+          backgroundColor: '#e9f5ee',
+          borderLeft: '4px solid #1abc9c',
         }"
       >
         <div class="event__info">
           <h3 class="event__title">
-            {{ block.isRecurring ? 'Recurrente' : 'Disponible' }}
+            {{ block.isRecurring ? "Recurrente" : "Disponible" }}
           </h3>
           <p class="event__time">{{ block.startTime }} – {{ block.endTime }}</p>
         </div>
@@ -74,12 +54,19 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watchEffect, onMounted } from "vue";
 
 const props = defineProps({
   availabilities: { type: Array, default: () => [] },
   highlightedDates: { type: Array, default: () => [] },
-  startDate: { type: String, default: () => new Date().toISOString().slice(0, 10) },
+  startDate: {
+    type: String,
+    default: () => new Date().toISOString().slice(0, 10),
+  },
+});
+
+onMounted(() => {
+  console.log(filteredAvailabilities.value);
 });
 
 const containerRef = ref(null);
@@ -91,20 +78,38 @@ const tooltip = ref({
   visible: false,
   title: "",
   count: 0,
-  left: 0, 
-  top: 0, 
+  left: 0,
+  top: 0,
   date: null,
 });
 
 function getStartOfWeek(date) {
   const d = new Date(date);
-  const day = d.getDay(); 
-  const diff = d.getDate() - (day === 0 ? 6 : day - 1); 
+  const day = d.getDay();
+  const diff = d.getDate() - (day === 0 ? 6 : day - 1);
   const start = new Date(d);
   start.setDate(diff);
   start.setHours(0, 0, 0, 0);
   return start;
 }
+
+function isDayInCurrentWeek(day) {
+  const today = new Date();
+  
+  const firstDayOfWeek = new Date(today);
+  firstDayOfWeek.setDate(today.getDate() - today.getDay() + 1); 
+  firstDayOfWeek.setHours(0,0,0,0);
+
+  const lastDayOfWeek = new Date(firstDayOfWeek);
+  lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
+  lastDayOfWeek.setHours(23,59,59,999);
+
+  const checkDay = new Date(day);
+  checkDay.setHours(12,0,0,0); 
+
+  return checkDay >= firstDayOfWeek && checkDay <= lastDayOfWeek;
+}
+
 
 const nextWeek = () => {
   currentDate.value = new Date(
@@ -113,9 +118,10 @@ const nextWeek = () => {
     currentDate.value.getDate() + 7
   );
   const monday = getStartOfWeek(currentDate.value);
-  selectedDay.value = monday.toISOString().slice(0, 10);
+  selectedDay.value = formatDate(monday);
   hideTooltip();
 };
+
 const previousWeek = () => {
   currentDate.value = new Date(
     currentDate.value.getFullYear(),
@@ -123,15 +129,17 @@ const previousWeek = () => {
     currentDate.value.getDate() - 7
   );
   const monday = getStartOfWeek(currentDate.value);
-  selectedDay.value = monday.toISOString().slice(0, 10);
+  selectedDay.value = formatDate(monday);
   hideTooltip();
 };
+
 const goToToday = () => {
   const today = new Date();
   currentDate.value = new Date(today);
-  selectedDay.value = today.toISOString().slice(0, 10);
+  selectedDay.value = formatDate(today);
   hideTooltip();
 };
+
 
 const weekDays = computed(() => {
   const start = getStartOfWeek(currentDate.value);
@@ -139,8 +147,7 @@ const weekDays = computed(() => {
   for (let i = 0; i < 7; i++) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
-    date.setHours(0, 0, 0, 0);
-    const dateStr = date.toISOString().slice(0, 10);
+    const dateStr = formatDate(date); // usa formato local
     days.push({
       date: dateStr,
       day: date.getDate(),
@@ -166,17 +173,50 @@ const formattedWeekRange = computed(() => {
 });
 
 const filteredAvailabilities = computed(() => {
-  const dayOfWeek = new Date(selectedDay.value).toLocaleDateString("en-US", {
-    weekday: "long",
-  });
+  const weekdays = [
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+    "domingo",
+  ];
+
+  const startOfWeek = getStartOfWeek(currentDate.value); 
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
 
   return props.availabilities.filter((a) => {
-    if (!a.active) return false;
-    if (a.isRecurring && a.dayOfWeek === dayOfWeek) return true;
-    if (!a.isRecurring && a.date?.slice(0, 10) === selectedDay.value) return true;
+    if (a.isRecurring) {
+
+      const dayIndex = weekdays.indexOf(a.dayOfWeek.toLowerCase());
+      if (dayIndex === -1) return false;
+
+      const dayDate = new Date(startOfWeek);
+      dayDate.setDate(startOfWeek.getDate() + dayIndex);
+
+      const dayDateStr = dayDate.toISOString().split("T")[0];
+      return dayDateStr === selectedDay.value;
+    }
+
+    if (!a.isRecurring && a.date) {
+      const dateStr = formatDate(a.date); 
+      return dateStr === selectedDay.value;
+    }
+
     return false;
   });
 });
+
+
+function formatDateUTC(date) {
+  const d = new Date(date);
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 function formatFullDate(dateStr) {
   const d = new Date(dateStr);
@@ -186,6 +226,14 @@ function formatFullDate(dateStr) {
     month: "long",
     day: "numeric",
   });
+}
+
+function formatDate(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function getAvailabilitiesForDate(dateStr) {
@@ -209,8 +257,8 @@ function showTooltipForDay(day, eventTarget) {
     const targetRect = eventTarget.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
-    
-    tooltip.value.left = (targetRect.left - containerRect.left + targetRect.width / 2) + 20;
+    tooltip.value.left =
+      targetRect.left - containerRect.left + targetRect.width / 2 + 20;
 
     tooltip.value.top = targetRect.top - containerRect.top;
   }
@@ -228,7 +276,7 @@ function hideTooltip() {
 const isTouchDevice = typeof window !== "undefined" && "ontouchstart" in window;
 
 function onDayEnter(day, evt) {
-  if (isTouchDevice) return; 
+  if (isTouchDevice) return;
   showTooltipForDay(day, evt.currentTarget);
 }
 
@@ -239,6 +287,8 @@ function onDayLeave() {
 
 function onDayClick(day, evt) {
   selectedDay.value = day.date;
+  console.log(selectedDay.value);
+
   if (isTouchDevice) {
     if (tooltip.value.visible && tooltip.value.date === day.date) {
       hideTooltip();
@@ -375,7 +425,7 @@ function isToday(dateStr) {
   border-radius: 8px;
   padding: 0.6rem;
   font-size: 0.85rem;
-  pointer-events: none; 
+  pointer-events: none;
   min-width: 160px;
   box-shadow: 0 8px 24px rgba(2, 6, 23, 0.2);
   transform-origin: center bottom;

@@ -15,7 +15,20 @@ export interface TutorInfo {
     phone: string;
     location: TutorLocation;
     reputation: TutorReputation;
+    availability: Availabilities[];
+    _id: string;
 }
+
+interface Availabilities{
+  id: string;
+  tutorId: string;
+  startTime: string;
+  endTime: string;
+  isRecurring: boolean;
+  dayOfWeek: string; 
+  active: boolean;
+}
+
 
 export interface TutorLocation {
     city: string;

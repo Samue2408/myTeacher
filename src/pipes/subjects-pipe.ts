@@ -3,12 +3,16 @@ import { Tutor } from "@/types/tutor";
 
 export class SubjectsPipe {
   private mapOne(item: Partial<SubjectSearchResponse>) {
+
+
     const tutorData: Partial<Tutor> = {
       name: item.tutorId.name,
       email: item.tutorId.email,
       phone: item.tutorId.phone,
       location: item.tutorId.location,
       reputation: item.tutorId.reputation,
+      availabilities: item.tutorId.availability,
+      id: item.tutorId._id,
     };
 
     return {
