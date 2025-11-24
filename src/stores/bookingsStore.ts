@@ -5,14 +5,17 @@ import { useErrorHandler, useSuccessHandler } from '@/composables/useAlertsHandl
 export const useBookingsStore = defineStore('bookings', {
     state: () => ({
         tutorBookings: [] as Array<any>,
+        studentBookings: [] as Array<any>,
         isLoading: false,
+        isLoadingStudent: false,
         loadedTutorId: null as string | null
+        ,loadedStudentId: null as string | null
     }),
     getters: {
         acceptedBookings: (state) => {
             return state.tutorBookings
-                .filter(b => b.status === 'Completada' || b.status === 'Cancelada' || b.status === 'Aceptada')
-                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                .filter(b => b.status !== 'Pendiente')
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).reverse();
         },
         pendingBookings: (state) => {
             return state.tutorBookings
@@ -29,8 +32,10 @@ export const useBookingsStore = defineStore('bookings', {
             this.tutorBookings = [];
             this.isLoading = true;
             try {
+                console.log('entro')
                 const data = await BookingsService.getByTutor(tutorId);
                 this.tutorBookings = data;
+                console.log(data.filter(s => !s.subject.name))
                 this.loadedTutorId = tutorId;
             } catch (error) {
                 handleError(error);
@@ -39,15 +44,31 @@ export const useBookingsStore = defineStore('bookings', {
             }
         },
 
+        async fetchBookingsByStudent(studentId: string) {
+            if (this.loadedStudentId === studentId && this.studentBookings.length >= 0) return;
+            const { handleError } = useErrorHandler();
+            this.studentBookings = [];
+            this.isLoadingStudent = true;
+            try {
+                const data = await BookingsService.getByStudent(studentId);
+                this.studentBookings = data;
+                this.loadedStudentId = studentId;
+            } catch (error) {
+                handleError(error);
+            } finally {
+                this.isLoadingStudent = false;
+            }
+        },
+
         async acceptBooking(bookingId: string) {
             const { handleError } = useErrorHandler();
             const { handleSuccess } = useSuccessHandler();
             this.isLoading = true;
             try {
-                await BookingsService.update(bookingId, { status: 'accepted' });
+                await BookingsService.update(bookingId, { status: 'Aceptada' });
                 const index = this.tutorBookings.findIndex(b => b._id === bookingId);
                 if (index !== -1) {
-                    this.tutorBookings[index].status = 'accepted';
+                    this.tutorBookings[index].status = 'Aceptada';
                 }
                 handleSuccess('Reserva aceptada con éxito');
             } catch (error) {
@@ -62,8 +83,11 @@ export const useBookingsStore = defineStore('bookings', {
             const { handleSuccess } = useSuccessHandler();
             this.isLoading = true;
             try {
-                await BookingsService.update(bookingId, { status: 'rejected' });
-                this.tutorBookings = this.tutorBookings.filter(b => b._id !== bookingId);
+                await BookingsService.update(bookingId, { status: 'Cancelada' });
+                const index = this.tutorBookings.findIndex(b => b._id === bookingId);
+                if (index !== -1) {
+                    this.tutorBookings[index].status = 'Cancelada';
+                }
                 handleSuccess('Reserva rechazada');
             } catch (error) {
                 handleError(error);

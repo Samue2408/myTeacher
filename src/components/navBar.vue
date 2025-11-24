@@ -74,8 +74,10 @@ import { useUserStore } from "@/stores/userStore";
 import { useSearchStore } from "@/stores/searchStore";
 
 const user = useUserStore();
-const goToProfile = () =>
-  router.push({ path: `/profile/${user.currentUser._id}` });
+const goToProfile = () => {
+  
+    router.push({ path: `/profile/${user.currentUser._id}` });
+}
 
 const auth = useAuthStore();
 

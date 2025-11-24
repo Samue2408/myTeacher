@@ -31,9 +31,8 @@
     <div class="card">
       <div class="header">
         <h3>Tu Próxima Clase</h3>
-        <span>En 2 días</span>
-
         <div class="menu-trigger" @click.stop="toggleMenu">
+          <span>{{ getTimeUntilBooking(booking.date) }}</span>
           <span class="material-icons"> more_vert </span>
           <MenuModal
             :items="menuItems"
@@ -44,31 +43,32 @@
             @closed="isMenuOpen = false"
           />
         </div>
+        
 
       </div>
 
       <div class="main">
         <div class="student-info">
-          <p>Mauricio Molina</p>
-          <h5>Programación</h5>
+          <p>{{ booking.student.name }}</p>
+          <h5 :title="booking.subject.name">{{ booking.subject.name }}</h5>
         </div>
         <div class="avatar">
-          <span>M</span>
+          <span>{{ booking.student.name[0].toUpperCase() }}</span>
         </div>
       </div>
 
       <div class="booking-info">
         <div class="date">
           <p>Fecha:</p>
-          <h5>23/11/2025</h5>
+          <h5>{{ formatDate(booking.date) }}</h5>
         </div>
         <div class="schedule">
           <p>Horario:</p>
-          <h5>10:00 AM - 11:00 AM</h5>
+          <h5>{{ booking.startTime }} - {{ booking.endTime}}</h5>
         </div>
         <div class="mode">
           <p>Modalidad:</p>
-          <h5>Presencial</h5>
+          <h5>{{ booking.type }}</h5>
         </div>
       </div>
     </div>
@@ -77,13 +77,13 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import type { BookingsType } from "@/types/bookings";
+import { Booking } from '@/types/dashboard'
 import type { PropType } from "vue";
 import MenuModal from "@/shared/components/MenuModal.vue";
 
 const $props = defineProps({
   booking: {
-    type: Object as PropType<BookingsType>,
+    type: Object as PropType<Booking>,
   },
   skeleton: {
     type: Boolean,
@@ -98,18 +98,80 @@ const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 };
 
+
+
+const formatDate = (date: string | number | Date | null | undefined): string => {
+  if (!date) return "";
+  const d = new Date(date);
+  const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
+  return d.toLocaleDateString("es-ES", options);
+};
+
+const getTimeUntilBooking = (date: string | number | Date | null | undefined): string => {
+  if (!date) return "";
+  
+  const bookingDate = new Date(date);
+  const today = new Date();
+  
+  // Normalizar las fechas a medianoche para comparación
+  today.setHours(0, 0, 0, 0);
+  bookingDate.setHours(0, 0, 0, 0);
+  
+  const diffMs = bookingDate.getTime() - today.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) {
+    return "Pasado";
+  }
+  
+  if (diffDays === 0) {
+    return "Hoy";
+  }
+  
+  if (diffDays === 1) {
+    return "Mañana";
+  }
+  
+  if (diffDays < 7) {
+    return `En ${diffDays} días`;
+  }
+  
+  const weeks = Math.floor(diffDays / 7);
+  const remainingDays = diffDays % 7;
+  
+  if (weeks === 1 && remainingDays === 0) {
+    return "En 1 semana";
+  }
+  
+  if (weeks < 4) {
+    if (remainingDays === 0) {
+      return `En ${weeks} semanas`;
+    }
+    return `En ${weeks} semanas y ${remainingDays} día${remainingDays > 1 ? 's' : ''}`;
+  }
+  
+  const months = Math.floor(diffDays / 30);
+  const remainingAfterMonths = diffDays % 30;
+  
+  if (remainingAfterMonths === 0) {
+    return `En ${months} mes${months > 1 ? 'es' : ''}`;
+  }
+  
+  return `En ${months} mes${months > 1 ? 'es' : ''} y ${remainingAfterMonths} día${remainingAfterMonths > 1 ? 's' : ''}`;
+};
+
 const menuItems = [
   {
     label: "Ir al enlace",
     icon: "link",
-    action: (row: BookingsType) => {
+    action: (row: Booking) => {
       console.log("Ir al enlace:", row);
     },
   },
   {
     label: "Ir a calendario",
     icon: "schedule",
-    action: (row: BookingsType) => {
+    action: (row: Booking) => {
       console.log("Ir al calendario:", row);
     },
   },
@@ -117,7 +179,7 @@ const menuItems = [
     label: "Cancelar clase",
     icon: "close",
     class: "red",
-    action: (row: BookingsType) => {
+    action: (row: Booking) => {
       console.log("Cancelar clase:", row);
     },
   },
@@ -150,11 +212,13 @@ const menuItems = [
 }
 
 .menu-trigger {
+  display: flex;
+  align-items: center;
   cursor: pointer;
   font-size: 22px;
-  padding: 4px;
   user-select: none;
 }
+
 
 .card .header h3 {
   font-size: 15px;

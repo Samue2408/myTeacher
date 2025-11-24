@@ -13,7 +13,7 @@ export function useErrorHandler() {
       defaultMessage;
 
     appStore.setError(message);
-    if (error.response.status === 401) {
+    if (error.response && error.response?.status === 401) {
       authStore.restoreSession();
     }
   }

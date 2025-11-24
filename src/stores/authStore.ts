@@ -7,6 +7,7 @@ import { useSubjectsStore } from './subjectStore';
 import router from "@/router";
 import { useDashboardStore } from './dashboardStore';
 import { useAvailabilitiesStore } from './availabilitiesStore';
+import { useBookingsStore } from './bookingsStore';
 
 interface AuthState {
   isAuthenticated: boolean
@@ -72,12 +73,13 @@ export const useAuthStore = defineStore('auth', {
       const subjectStore = useSubjectsStore();
       const dashboardStore = useDashboardStore();
       const availabilitiesStore = useAvailabilitiesStore();
+      const bookingsStore = useBookingsStore();
 
       subjectStore.$reset();
       dashboardStore.$reset();
       userStore.clearUser();
       availabilitiesStore.$reset();
-
+      bookingsStore.$reset();
     },
 
   }

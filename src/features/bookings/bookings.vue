@@ -24,10 +24,12 @@
       >
         <div class="reserva-header">
           <div class="tutor">
-            <img :src="booking.tutor.img" alt="Tutor" />
+            <div class="avatar">
+              <span>{{ booking.tutor[0].name[0] }}</span>
+            </div>
             <div>
-              <h3>{{ booking.tutor.name }}</h3>
-              <p>{{ booking.tutor.subject }}</p>
+              <h3>{{ booking.tutor[0].name }}</h3>
+              <p>{{ booking.subject.name }}</p>
             </div>
           </div>
           <span :class="['status', booking.status]">{{ statusLabel(booking.status) }}</span>
@@ -37,15 +39,15 @@
           <div class="info">
             <div>
               <span>Fecha</span>
-              <strong>{{ booking.date }}</strong>
+              <strong>{{ formatDate(booking.date) }}</strong>
             </div>
             <div>
-              <span>Hora</span>
-              <strong>{{ booking.time }}</strong>
+              <span>Inicio</span>
+              <strong>{{ booking.startTime }}</strong>
             </div>
             <div>
-              <span>Duración</span>
-              <strong>{{ booking.duration }} min</strong>
+              <span>Final</span>
+              <strong>{{ booking.endTime }}</strong>
             </div>
           </div>
           <div class="contact">
@@ -56,8 +58,8 @@
 
         <div class="reserva-footer">
           <button class="btn" v-if="booking.status === 'upcoming'">Reprogramar</button>
-          <button class="btn danger" v-if="booking.status === 'upcoming'">Cancelar</button>
-          <button class="btn primary" v-if="booking.status === 'completed'">Ver Detalles</button>
+          <button class="btn danger" v-if="booking.status === 'Aceptada'">Cancelar</button>
+          <button class="btn primary" >Ver Detalles</button>
         </div>
       </div>
     </transition-group>
@@ -69,85 +71,60 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed } from "vue"
-import ComboBox from "@/shared/components/comboBox.vue"
+<script setup lang="ts">
+import { ref, computed, onMounted } from "vue";
+import { useUserStore } from "@/stores/userStore";
+import { useBookingsStore } from "@/stores/bookingsStore";
+import ComboBox from "@/shared/components/comboBox.vue";
 
-const bookings = ref([
-  {
-    id: 1,
-    tutor: {
-      name: "Laura Gómez",
-      subject: "Matemáticas",
-      img: "https://randomuser.me/api/portraits/women/44.jpg",
-      email: "laura.gomez@edutin.com",
-      phone: "+57 310 458 9276"
-    },
-    date: "2025-11-02",
-    time: "10:00 AM",
-    duration: 60,
-    status: "upcoming"
-  },
-  {
-    id: 2,
-    tutor: {
-      name: "Carlos Ramírez",
-      subject: "Física",
-      img: "https://randomuser.me/api/portraits/men/32.jpg",
-      email: "carlos.ramirez@edutin.com",
-      phone: "+57 301 722 6435"
-    },
-    date: "2025-10-10",
-    time: "3:00 PM",
-    duration: 45,
-    status: "completed"
-  },
-  {
-    id: 3,
-    tutor: {
-      name: "Sofía Hernández",
-      subject: "Inglés",
-      img: "https://randomuser.me/api/portraits/women/26.jpg",
-      email: "sofia.hernandez@edutin.com",
-      phone: "+57 320 994 3178"
-    },
-    date: "2025-09-18",
-    time: "6:00 PM",
-    duration: 60,
-    status: "cancelled"
-  }
-])
+const userStore = useUserStore();
+const currentUserId = userStore.currentUser?._id || null;
 
-const statusFilter = ref("")
-const tutorFilter = ref("")
+const bookingsStore = useBookingsStore();
+
+const bookings = computed(() => bookingsStore.studentBookings ?? []);
+const isLoading = computed(() => bookingsStore.isLoadingStudent);
+
+const statusFilter = ref("");
+const tutorFilter = ref("");
 
 const statusOptions = [
   { label: "Todas", value: "" },
   { label: "Próximas", value: "upcoming" },
   { label: "Completadas", value: "completed" },
-  { label: "Canceladas", value: "cancelled" }
-]
+  { label: "Canceladas", value: "cancelled" },
+];
 
-const tutorOptions = bookings.value.map((b) => ({
-  label: b.tutor.name,
-  value: b.tutor.name,
-  img: b.tutor.img
-}))
+onMounted(() => {
+  if (currentUserId) bookingsStore.fetchBookingsByStudent(currentUserId);
+});
+
+const formatDate = (date: string | number | Date | null | undefined): string => {
+  if (!date) return "";
+  const d = new Date(date);
+  const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
+  return d.toLocaleDateString("es-ES", options);
+};
+
+const tutorOptions = computed(() =>
+  (bookings.value || []).map((b) => ({
+    label: b.tutor?.name || b.tutorName || "-",
+    value: b.tutor?.name || b.tutorName || "-",
+    img: b.tutor?.img || null,
+  }))
+);
 
 const filteredBookings = computed(() =>
-  bookings.value.filter((b) => {
-    const matchStatus = !statusFilter.value || b.status === statusFilter.value
-    const matchTutor = !tutorFilter.value || b.tutor.name === tutorFilter.value
-    return matchStatus && matchTutor
+  (bookings.value || []).filter((b) => {
+    const matchStatus = !statusFilter.value || b.status === statusFilter.value;
+    const tutorName = b.tutor?.name || b.tutorName || "";
+    const matchTutor = !tutorFilter.value || tutorName === tutorFilter.value;
+    return matchStatus && matchTutor;
   })
-)
+);
 
 const statusLabel = (status) =>
-  status === "upcoming"
-    ? "Próxima"
-    : status === "completed"
-    ? "Completada"
-    : "Cancelada"
+  status === "upcoming" ? "Próxima" : status === "completed" ? "Completada" : "Cancelada";
 </script>
 
 <style scoped>
@@ -185,6 +162,20 @@ const statusLabel = (status) =>
   gap: 1rem;
   width: 100%;
   max-width: 430px;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #08b294;
+}
+.avatar span {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .reservas-grid {

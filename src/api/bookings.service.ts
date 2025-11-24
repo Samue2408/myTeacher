@@ -20,6 +20,19 @@ export class BookingsServiceClass extends BaseService {
     }
   }
 
+  async getByStudent(studentId: string): Promise<BookingsType[]> {
+    try {
+      const response = await http.get<BookingsType[]>(
+        `${this.basePath}/count/student-bookings/${studentId}`
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Error al obtener las reservas del estudiante."
+      );
+    }
+  }
+
   async createBooking(
     booking: Omit<BookingsType, "id" | "createdAt" | "updatedAt">
   ): Promise<BookingsType> {

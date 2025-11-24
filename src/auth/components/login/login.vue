@@ -54,8 +54,10 @@ import { ref, watch, onMounted, onUnmounted } from "vue";
 import inputDefault from "../../../shared/components/input.vue";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
+import { useUserStore } from "@/stores/userStore";
 
 const auth = useAuthStore();
+const userStore = useUserStore()
 const router = useRouter();
 
 const email = ref("");
@@ -106,7 +108,11 @@ async function handleLogin() {
     await auth.login(user);
 
     if (auth.token) {
-      router.push({ path: "/profile/1" });
+      if(userStore.currentUser.role == 'Estudiante'){
+        router.push({ path: "/search" });
+      } else {
+        router.push({ path: "/profile/1" });
+      }
     } else {
       errorMsg.value = "Credenciales incorrectas";
     }

@@ -17,10 +17,11 @@
     <div class="bookings-column pending">
       <h4 class="column-title">Pendientes de Aceptar</h4>
       <ul class="bookings-timeline" v-if="bookingsStore.pendingBookings.length > 0">
-        <PendingBookingCard
+        <BookingCard
           v-for="booking in bookingsStore.pendingBookings"
           :key="booking._id"
           :booking="booking"
+          :pending="true"
           :isLoading="isLoading"
           @accept="handleAccept"
           @reject="handleReject"
@@ -28,6 +29,8 @@
       </ul>
       <p v-else class="empty-message">No hay reservas pendientes.</p>
     </div>
+    <ScrollToTop />
+
   </div>
 </template>
 
@@ -37,7 +40,7 @@ import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/userStore";
 import { useBookingsStore } from "@/stores/bookingsStore";
 import BookingCard from "./BookingCard.vue";
-import PendingBookingCard from "./PendingBookingCard.vue";
+import ScrollToTop from "@/components/ScrollToTop.vue";
 
 const userStore = useUserStore();
 const bookingsStore = useBookingsStore();

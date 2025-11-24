@@ -1,11 +1,19 @@
 <template>
-  <li class="booking-item">
+  <li class="booking-item" >
     <div class="booking-content">
       <div class="booking-header">
-        <h5>{{ booking.student }} Samuel Maldonado <span>({{ booking.type.toLowerCase() }})</span></h5>
-        <span class="booking-date">{{ formatDate(booking.date) }}</span>
+        <div class="booking-student">
+            <div class="avatar">
+                <span>{{ $props.booking.student.name[0].toUpperCase() }}</span>
+            </div>
+            <div>
+                <h5>{{ $props.booking.student.name }} <span>({{ $props.booking.type.toLowerCase() }})</span></h5>
+                <p class="booking-subject">{{ $props.booking.subject.name}}</p>
+            </div>
+        </div>
+        <span class="booking-date">{{ formatDate($props.booking.date) }}</span>
       </div>
-      <p class="booking-subject">{{ booking.subject }}Matemáticas</p>
+      
 
       <Transition name="expand">
         <div v-if="showDetails" class="booking-other-info">
@@ -14,64 +22,81 @@
               <span class="material-icons-outlined">schedule</span>
               <p>Horario:</p>
             </div>
-            {{ booking.startTime }} - {{ booking.endTime }}
+            {{ $props.booking.startTime }} - {{ $props.booking.endTime }}
           </div>
           <div class="booking-type">  
             <div class="label">
               <span class="material-icons-outlined">location_on</span>
               <p>Ubicación:</p>
             </div>           
-            {{ booking.location }}
+            {{ $props.booking.location }}
           </div>
           <div class="booking-price">    
             <div class="label">
               <span class="material-icons-outlined">trending_up</span>
               <p>Ganancia:</p>
             </div>          
-            {{ formatCurrency(booking.price) }}
+            {{ formatCurrency($props.booking.price) }}
           </div>
         </div>
       </Transition>
       <hr>
       <div class="footer">
-        <div class="actions">
-          <button class="action" title="Comentarios">                        
-            <span class="material-icons-outlined">mode_comment</span>
-            <p>{{ booking.comments || 0 }}</p>
-          </button>
-          <button v-if="booking.type.toLowerCase() == 'virtual'" class="action" title="Link de la clase">                        
-            <span class="material-icons-outlined link">link</span>
-          </button>
-          <button class="action" @click="showDetails = !showDetails" title="Más información">                        
-            <span class="material-icons-outlined">info</span>
-          </button>
+          <div class="actions">
+                <button class="action" @click="showDetails = !showDetails" title="Más información">                        
+                    <span class="material-icons-outlined">info</span>
+                </button>
+                <button v-if="!$props.pending" class="action" title="Comentarios">                        
+                    <span class="material-icons-outlined">mode_comment</span>
+                    <p>{{ $props.booking.reviewsCount }}</p>
+                </button>
+                <button v-if="$props.booking.type.toLowerCase() == 'virtual' && !$props.pending" class="action" :title="$props.booking.videoCallLink">                        
+                    <span class="material-icons-outlined link">link</span>
+            </button>
         </div>
         
-        <div class="booking-status">
-          <span :class="`status ${booking.status.toLowerCase()}`">{{ booking.status }}</span>
+        <div v-if="$props.pending" class="booking-actions">
+          <button class="btn-accept" @click="handleAccept" :disabled="isLoading">Aceptar</button>
+          <button class="btn-reject" @click="handleReject" :disabled="isLoading">Rechazar</button>
         </div>
+        <div v-else class="booking-status">
+          <span :class="`status ${$props.booking.status.toLowerCase()}`">{{ $props.booking.status }}</span>
+        </div>
+
       </div>
     </div>
   </li>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, defineProps } from "vue";
+import { BookingsType } from "@/types/bookings";
+import type {PropType} from "vue"
 
-defineProps({
+const $props = defineProps({
   booking: {
-    type: Object,
+    type: Object as PropType<BookingsType>,
     required: true,
   },
+  pending: {
+    type: Boolean,
+    default: false
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const emit = defineEmits(["accept", "reject"]);
 
 const showDetails = ref(false);
 
 // Formatear fecha
-const formatDate = (date) => {
+const formatDate = (date: string | number | Date | null | undefined): string => {
   if (!date) return "";
   const d = new Date(date);
-  const options = { day: "2-digit", month: "short", year: "numeric" };
+  const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
   return d.toLocaleDateString("es-ES", options);
 };
 
@@ -87,6 +112,14 @@ function formatCurrency(value) {
   }
   return `$${value}`;
 }
+
+const handleAccept = () => {
+  emit("accept", $props.booking);
+};
+
+const handleReject = () => {
+  emit("reject", $props.booking);
+};
 </script>
 
 <style scoped>
@@ -114,7 +147,7 @@ function formatCurrency(value) {
 .booking-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: start;
 }
 
 .booking-header h5 {
@@ -127,6 +160,25 @@ function formatCurrency(value) {
 .booking-header h5 span {
     color: #222;
     font-weight: 400;
+    font-size: 11px;
+}
+
+.booking-student {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.booking-student .avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #797979;
+  color: white;
+  font-weight: 600;
 }
 
 .booking-date {
@@ -261,6 +313,53 @@ hr {
 .status.pendiente {
   background-color: #fff3e0;
   color: #e65100;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-accept,
+.btn-reject {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-accept {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-accept:hover:not(:disabled) {
+  background-color: #3e5de6;
+  box-shadow: 0 2px 8px rgba(35, 84, 182, 0.3);
+}
+
+.btn-accept:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-reject {
+  background-color: #EE332D;
+  color: white;
+}
+
+.btn-reject:hover:not(:disabled) {
+  background-color: #efefef;
+  color: #333;
+}
+
+.btn-reject:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Transición suave para información adicional */

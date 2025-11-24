@@ -1,4 +1,5 @@
 <template>
+  
   <div v-if="loading" class="loading">
     <div class="spinner"></div>
   </div>
@@ -260,10 +261,11 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.resume-section {
+section {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-height: 90%;
 }
 
 .progress-bar {

@@ -31,8 +31,8 @@ const passwordStrength = ref<"Débil" | "Media" | "Fuerte" | "Muy débil">(
 const strengthColor = ref("#d33");
 
 const roles = [
-  { label: "Profesor", value: "teacher" },
-  { label: "Estudiante", value: "student" },
+  { label: "Tutor", value: "Tutor" },
+  { label: "Estudiante", value: "Estudiante" },
 ];
 
 async function validatePassword(password: string): Promise<void> {
