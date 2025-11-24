@@ -166,9 +166,7 @@
         </div>
         <div class="right-col">
           <div class="calendar-section">
-            <CalendarMonth
-              @dateSelected="onDateSelected"
-            />
+            <CalendarMonth @dateSelected="onDateSelected" />
           </div>
         </div>
       </section>
@@ -216,6 +214,8 @@ export default {
       subjects: [],
       startDate: null,
       endDate: null,
+      startHour: null,
+      endHour: null,
       today: new Date(),
       selectedTab: "information",
       loading: true,
@@ -239,16 +239,18 @@ export default {
       this.subjects = searchs.results;
       this.selectedSubject = this.subjects[0];
       this.loading = false;
-      
     } else {
       await this.handleSearch(q);
     }
 
     searchs.$subscribe((mutation, state) => {
       this.subjects = state.results;
-      
-      if (!this.selectedSubject || this.selectedSubject.id !== state.results[0]?.id) {
-        this.selectedSubject = state.results[0] || null;        
+
+      if (
+        !this.selectedSubject ||
+        this.selectedSubject.id !== state.results[0]?.id
+      ) {
+        this.selectedSubject = state.results[0] || null;
       }
 
       this.loading = state.results.length === 0;
@@ -257,7 +259,7 @@ export default {
 
   methods: {
     selectTeacher(teacher) {
-      this.selectedSubject = teacher;      
+      this.selectedSubject = teacher;
     },
 
     async createBooking() {
@@ -270,17 +272,20 @@ export default {
           location: "Virtual",
           status: "Pendiente",
           date: this.startDate,
-          startTime: "14:00",
-          endTime: "18:00",
+          startTime: this.startHour,
+          endTime: this.endHour,
           price: this.selectedSubject.price,
         };
 
-        console.log(this.selectedSubject)
+        console.log(this.selectedSubject);
 
-        const response = await BookingsService.createBooking(JSON.stringify(booking));
+        const response = await BookingsService.createBooking(
+          JSON.stringify(booking)
+        );
 
-        console.log(response);
-        
+        if(response._id){
+          this.$router.push("/payment");
+        }
 
         // this.result.value = JSON.stringify(response, null, 2);
       } catch (error) {
@@ -313,7 +318,7 @@ export default {
       if (results.length > 0) {
         this.loading = false;
         this.subjects = results;
-        this.selectedSubject = results[0];        
+        this.selectedSubject = results[0];
       }
     },
 
@@ -348,13 +353,23 @@ export default {
       });
     },
 
-    onDateSelected(date) {
+    onDateSelected(event) {
+      const { date, startTime, endTime } = event;
+
+
       if (!this.startDate || (this.startDate && this.endDate)) {
-        this.startDate = date;
+        this.startDate = date; 
+        this.startHour = startTime;
+        this.endHour = endTime;
+
         this.endDate = null;
-      } else if (this.startDate && !this.endDate && date > this.startDate) {
+      }
+
+      else if (this.startDate && !this.endDate && date > this.startDate) {
         this.endDate = date;
-      } else {
+      }
+      
+      else {
         this.startDate = date;
         this.endDate = null;
       }
@@ -364,7 +379,6 @@ export default {
         month: "short",
         year: "numeric",
       });
-
 
       this.sendDate = formattedDate;
 
@@ -377,7 +391,10 @@ export default {
         img: this.selectedSubject.img,
         email: this.selectedSubject.email,
         phone: this.selectedSubject.phone,
+        user: this.selectedSubject.tutor.name,
         date: formattedDate,
+        startTime,
+        endTime,
       };
 
       localStorage.setItem("tutorReserva", JSON.stringify(tutorInfo));
@@ -385,7 +402,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .crm-container {

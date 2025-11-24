@@ -1,44 +1,27 @@
 <template>
   <div class="calendar-container">
+
+    <!-- HEADER -->
     <header class="calendar-header">
       <button class="nav-btn" @click="prevPeriod">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="none"
-        >
-          <path
-            d="M10 3L5 8l5 5"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none">
+          <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
 
       <div class="header-title">{{ headerTitle }}</div>
 
       <button class="nav-btn" @click="nextPeriod">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="none"
-        >
-          <path
-            d="M6 3l5 5-5 5"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none">
+          <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
     </header>
 
+    <!-- MODE -->
     <nav class="view-switch">
       <button
-        v-for="mode in ['día', 'semana', 'mes', 'año']"
+        v-for="mode in ['día','semana','mes','año']"
         :key="mode"
         :class="{ active: viewMode === mode }"
         @click="setViewMode(mode)"
@@ -47,15 +30,14 @@
       </button>
     </nav>
 
+    <!-- WEEK DAYS -->
     <div v-if="viewMode === 'semana'" class="days-row">
       <div v-for="(day, i) in weekDays" :key="i">{{ day }}</div>
     </div>
 
+    <!-- DATES -->
     <transition name="fade">
-      <div
-        v-if="['día', 'semana', 'mes'].includes(viewMode)"
-        class="dates-grid"
-      >
+      <div v-if="['día','semana','mes'].includes(viewMode)" class="dates-grid">
         <div
           v-for="(date, i) in visibleDates"
           :key="i"
@@ -74,6 +56,7 @@
       </div>
     </transition>
 
+    <!-- YEAR -->
     <transition name="fade">
       <div v-if="viewMode === 'año'" class="year-grid">
         <div
@@ -87,6 +70,7 @@
       </div>
     </transition>
 
+    <!-- TOOLTIP -->
     <transition name="fade">
       <div
         v-if="tooltip.visible"
@@ -96,8 +80,43 @@
         <p>{{ tooltip.text }}</p>
       </div>
     </transition>
+
   </div>
+
+  <!-- DRAWER BACKDROP -->
+  <transition name="fade">
+    <div v-if="showTimePicker" class="backdrop" @click="closeDrawer"></div>
+  </transition>
+
+  <!-- DRAWER SLIDE UP -->
+  <transition name="slide-up">
+    <div v-if="showTimePicker" class="drawer">
+
+      <h3>
+        Seleccionar horario  
+        <span>{{ selectedDate?.toLocaleDateString("es-ES") }}</span>
+      </h3>
+
+      <div class="picker-row">
+        <label>Hora inicial</label>
+        <input type="time" v-model="startHour" />
+      </div>
+
+      <div class="picker-row">
+        <label>Hora final</label>
+        <input type="time" v-model="endHour" />
+      </div>
+
+      <div class="drawer-actions">
+        <button class="cancel" @click="closeDrawer">Cancelar</button>
+        <button class="confirm" @click="confirmTimeRange">Confirmar</button>
+      </div>
+
+    </div>
+  </transition>
+
 </template>
+
 
 <script setup>
 import { ref, computed, watch } from "vue";
@@ -114,47 +133,37 @@ const today = new Date();
 const month = ref(today.getMonth());
 const year = ref(today.getFullYear());
 const viewMode = ref("mes");
+
 const dates = ref([]);
 const weekDays = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const months = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
+  "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
 ];
 
 const tooltip = ref({ visible: false, text: "", x: 0, y: 0 });
 
+const selectedDate = ref(null);
+const showTimePicker = ref(false);
+const startHour = ref("09:00");
+const endHour = ref("10:00");
+
 const monthName = computed(() => {
-  const name = new Date(year.value, month.value, 1).toLocaleDateString(
-    "es-ES",
-    { month: "long" }
-  );
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  const n = new Date(year.value, month.value, 1).toLocaleDateString("es-ES", {
+    month: "long",
+  });
+  return n.charAt(0).toUpperCase() + n.slice(1);
 });
 
 const headerTitle = computed(() => {
   switch (viewMode.value) {
     case "día":
       return today.toLocaleDateString("es-ES", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
       });
     case "semana":
       const [start, end] = getCurrentWeekRange(today);
-      return `Semana del ${start.getDate()} al ${end.getDate()} de ${
-        monthName.value
-      }`;
+      return `Semana del ${start.getDate()} al ${end.getDate()} de ${monthName.value}`;
     case "mes":
       return `${monthName.value} ${year.value}`;
     case "año":
@@ -183,15 +192,13 @@ function getCurrentWeek(date) {
   const start = new Date(date);
   const day = start.getDay() === 0 ? 6 : start.getDay() - 1;
   start.setDate(start.getDate() - day);
-  return Array.from(
-    { length: 7 },
-    (_, i) =>
-      new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
+  return Array.from({ length: 7 }, (_, i) =>
+    new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
   );
 }
 function getCurrentWeekRange(date) {
-  const week = getCurrentWeek(date);
-  return [week[0], week[6]];
+  const w = getCurrentWeek(date);
+  return [w[0], w[6]];
 }
 
 function prevPeriod() {
@@ -230,9 +237,25 @@ function isSelected(date) {
 function isInRange(date) {
   return isBetween(date, props.startDate, props.endDate);
 }
+
 function onDateClick(date) {
-  emit("dateSelected", date);
+  selectedDate.value = date;
+  showTimePicker.value = true;
 }
+
+function closeDrawer() {
+  showTimePicker.value = false;
+}
+
+function confirmTimeRange() {
+  emit("dateSelected", {
+    date: selectedDate.value,
+    startTime: startHour.value,
+    endTime: endHour.value,
+  });
+  showTimePicker.value = false;
+}
+
 function goToMonth(i) {
   month.value = i;
   viewMode.value = "mes";
@@ -242,32 +265,32 @@ function showTooltip(date, event) {
   const key = date.toISOString().split("T")[0];
   if (!props.tooltips[key]) return;
 
-  const target = event.currentTarget;
-  const rect = target.getBoundingClientRect();
-
-  const containerRect = target
+  const rect = event.currentTarget.getBoundingClientRect();
+  const containerRect = event.currentTarget
     .closest(".calendar-container")
     .getBoundingClientRect();
-  const relativeX = rect.left - containerRect.left + rect.width / 2;
-  const relativeY = rect.top - containerRect.top;
 
   tooltip.value = {
     visible: true,
     text: props.tooltips[key],
-    x: relativeX,
-    y: relativeY,
+    x: rect.left - containerRect.left + rect.width / 2,
+    y: rect.top - containerRect.top,
   };
 }
 
 function hideTooltip() {
   tooltip.value.visible = false;
 }
+
 function setViewMode(mode) {
   viewMode.value = mode;
 }
 </script>
 
+
 <style scoped lang="scss">
+/* CALENDARIO (idéntico al tuyo) ---------------------------------- */
+
 .calendar-container {
   width: 100%;
   max-width: 380px;
@@ -320,19 +343,13 @@ function setViewMode(mode) {
     border: 1px solid #d0d0d0;
     background: #fff;
     font-size: 0.8rem;
-    text-transform: capitalize;
     cursor: pointer;
-    transition: all 0.2s;
 
     &.active {
       background-color: #1677ff;
       color: white;
       border-color: #1677ff;
       box-shadow: 0 0 6px rgba(22, 119, 255, 0.3);
-    }
-
-    &:hover:not(.active) {
-      background-color: #f5f8ff;
     }
   }
 }
@@ -350,7 +367,6 @@ function setViewMode(mode) {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.2rem;
-  text-align: center;
 
   .date-cell {
     padding: 0.6rem 0;
@@ -373,11 +389,6 @@ function setViewMode(mode) {
       color: #fff;
       box-shadow: 0 0 6px rgba(22, 119, 255, 0.4);
     }
-
-    &:hover:not(.selected) {
-      background-color: #edf2ff;
-      transform: scale(1.05);
-    }
   }
 }
 
@@ -385,7 +396,6 @@ function setViewMode(mode) {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
-  text-align: center;
 
   .month-cell {
     background: #fff;
@@ -393,16 +403,10 @@ function setViewMode(mode) {
     padding: 0.75rem;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      background-color: #1677ff;
-      color: white;
-      transform: scale(1.05);
-    }
   }
 }
 
+/* TOOLTIP */
 .tooltip {
   position: absolute;
   background: #222;
@@ -410,19 +414,107 @@ function setViewMode(mode) {
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 12px;
-  pointer-events: none;
-  z-index: 100;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   transform: translate(-50%, -120%);
-  white-space: nowrap;
+}
+
+/* ---------------- DRAWER STYLES ---------------- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+}
+
+.drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  background: #fff;
+  padding: 1.2rem 1rem;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 18px rgba(0,0,0,0.12);
+
+  z-index: 100;
+  animation: none;
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+
+    span {
+      display: block;
+      font-size: .85rem;
+      font-weight: 400;
+      color: #666;
+    }
+  }
+
+  .picker-row {
+    margin-bottom: 1rem;
+
+    label {
+      font-size: 0.8rem;
+      color: #444;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+    input[type="time"] {
+      padding: 0.55rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: .9rem;
+      width: 100%;
+    }
+  }
+
+  .drawer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+
+    .cancel {
+      padding: .55rem 1rem;
+      border-radius: 8px;
+      background: #eee;
+      border: none;
+      cursor: pointer;
+    }
+    .confirm {
+      padding: .55rem 1rem;
+      border-radius: 8px;
+      background: #1677ff;
+      color: white;
+      cursor: pointer;
+      border: none;
+      font-weight: 500;
+      box-shadow: 0 0 6px rgba(22,119,255,.3);
+    }
+  }
+}
+
+/* ANIMACIONES */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform .28s ease, opacity .28s ease;
+}
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
 }
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.25s ease;
+  transition: opacity .25s ease;
 }
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 </style>
+

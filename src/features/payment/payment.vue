@@ -65,7 +65,9 @@
             </div>
           </label>
 
-          <button v-if="tutor" class="btn-pay">Pagar | ${{ tutor.price ?? '0'}}</button>
+          <button v-if="tutor" class="btn-pay">
+            Pagar | ${{ tutor.price ?? "0" }}
+          </button>
           <p class="terms">
             By clicking this, I agree to Treva
             <a href="#">Terms & Conditions</a> and
@@ -77,13 +79,19 @@
       <div class="payment-right" v-if="tutor">
         <div class="booking-summary">
           <div class="tutor-info">
-            <img :src="tutor.img" alt="Tutor" />
+            <img v-if="tutor.img" :src="tutor.img" alt="Tutor" />
+            <span
+              :style="{ backgroundColor: stringToHexColor(tutor.user) }"
+              v-if="!tutor.img"
+              >{{ tutor.user[0] }}</span
+            >
+
             <div>
               <div class="flex gap--md flex--center-y flex--between">
-                <h4>{{ tutor.name }}</h4>
+                <h4>{{ tutor.user }}</h4>
                 <p>Fecha: {{ tutor.date }}</p>
               </div>
-              <p>Materia: {{ tutor.subject }}</p>
+              <p>Materia: {{ tutor.name }}</p>
             </div>
           </div>
           <p class="note">
@@ -342,6 +350,16 @@
   object-fit: cover;
 }
 
+.tutor-info span {
+  min-width: 40px;
+  min-height: 40px;
+  clip-path: circle();
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
 .tutor-info h4 {
   margin: 0;
   font-size: 1.1rem;
@@ -373,4 +391,17 @@ onMounted(() => {
     tutor.value = JSON.parse(tutorSaved);
   }
 });
+
+function stringToHexColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  const hue = Math.abs(hash) % 360;
+  const saturation = 60;
+  const lightness = 85;
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
 </script>
