@@ -1,13 +1,13 @@
 import { defineStore } from "pinia";
 import { DashboardService } from "@/api/dashboard.service";
-import { DashboardType } from "@/types/dashboard";
+import { DashboardResponse } from "@/types/dashboard";
 import { useErrorHandler, useSuccessHandler } from '@/composables/useAlertsHandler';
 
 
 
 export const useDashboardStore = defineStore('dashboard', {
   state: () => ({
-    dashboard: null as Partial<DashboardType> | null,
+    dashboard: null as Partial<DashboardResponse> | null,
     isLoading: true,
     loadedTutorId: null as string | null
   }),
@@ -25,9 +25,10 @@ export const useDashboardStore = defineStore('dashboard', {
         this.isLoading = true;
 
         try {
-            const { data } = await DashboardService.getById(tutorId) as {message: string, data: DashboardType};        
+            const data = await DashboardService.getById(tutorId) as DashboardResponse;        
 
             this.dashboard = data;
+
             this.loadedTutorId = tutorId;
 
         } catch (error) {

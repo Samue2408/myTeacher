@@ -10,7 +10,7 @@ export class BookingsServiceClass extends BaseService {
   async getByTutor(tutorId: string): Promise<BookingsType[]> {
     try {
       const response = await http.get<BookingsType[]>(
-        `${this.basePath}/tutor-bookings/${tutorId}`
+        `${this.basePath}/count/tutor-bookings/${tutorId}`
       );
       return response.data;
     } catch (error) {

@@ -6,15 +6,15 @@
   </template>
   <template v-else>
     <div class="stats-cards">
-      <StatsCards title="Estudiantes" :value="dashboardStore.dashboard.students.toString()"
-        :indicator-num="dashboardStore.dashboard.diferenceStudents" subtitle="Alumnos Atendidos" />
-      <StatsCards title="Ingresos" :value=formatCurrency(dashboardStore.dashboard.income)
-        :indicator-icon="dashboardStore.dashboard.diferenceIncomePercentage >= 0 ? 'call_made' : 'call_received'"
-        :indicator-num="dashboardStore.dashboard.diferenceIncomePercentage" subtitle="Ganancias obtenidas" />
-      <StatsCards title="Clases Canceladas" :value="dashboardStore.dashboard.canceledClasses.toString()"
-        :indicator-num="dashboardStore.dashboard.diferenceCanceledClasses" :invert-condition-value="true"
+      <StatsCards title="Estudiantes" :value="dashboard.stats.students.toString()"
+        :indicator-num="dashboard.stats.diferenceStudents" subtitle="Alumnos Atendidos" />
+      <StatsCards title="Ingresos" :value=formatCurrency(dashboard.stats.income)
+        :indicator-icon="dashboard.stats.diferenceIncomePercentage >= 0 ? 'call_made' : 'call_received'"
+        :indicator-num="dashboard.stats.diferenceIncomePercentage" subtitle="Ganancias obtenidas" />
+      <StatsCards title="Clases Canceladas" :value="dashboard.stats.canceledClasses.toString()"
+        :indicator-num="dashboard.stats.diferenceCanceledClasses" :invert-condition-value="true"
         subtitle="Sesiones no realizadas" />
-      <StatsCards title="Solicitudes pendientes" :value="dashboardStore.dashboard.pendingRequests.toString()"
+      <StatsCards title="Solicitudes pendientes" :value="dashboard.stats.pendingRequests.toString()"
         indicator-icon="visibility" subtitle="Reservas en espera" />
     </div>
   </template>
@@ -39,6 +39,7 @@
 
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { storeToRefs } from "pinia";
 import { useDashboardStore } from "@/stores/dashboardStore";
 import { useDashboardSync } from "@/composables/useDashboardSync";
 import { useUserStore } from "@/stores/userStore";
@@ -48,6 +49,7 @@ import BookingsCards from "./bookingsCards.vue";
 const dashboardStore = useDashboardStore();
 const userStore = useUserStore();
 const tutorId = userStore.currentUser?._id;
+const { dashboard } = storeToRefs(dashboardStore)
 
 function formatCurrency(value: any) {
 

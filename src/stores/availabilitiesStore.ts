@@ -63,7 +63,7 @@ export const useAvailabilitiesStore = defineStore('availabilities', {
                 }
                 return s;
             })
-            handleSuccess('Disponibilidad activada con éxito')
+            handleSuccess('Disponibilidad modificada con éxito')
             } catch (err) {
             handleError(this.errorMessage);
             } finally {

@@ -219,8 +219,8 @@ const createAvailability = async () => {
   
   const newAvailability = {
     tutorId: userStore.currentUser?._id,
-    date: !availabilityRecurrent.value ? availabilityDate.value : null,
-    dayOfWeek: availabilityRecurrent.value ? availabilityDayOfWeek.value : null,
+    date: !availabilityRecurrent.value ? availabilityDate.value : "",
+    dayOfWeek: availabilityRecurrent.value ? availabilityDayOfWeek.value : "",
     startTime: availabilityFrom.value,
     endTime: availabilityTo.value,
     isRecurring: availabilityRecurrent.value,

@@ -15,7 +15,7 @@
       <div class="info">
         <div class="info-item">
           <label>Popularidad</label>
-          <p>{{ currentUser.reputation.rating }}</p>
+          <RatingStars :rating="currentUser.reputation.rating" />
         </div>
         <div class="info-item">
           <label>Correo personal</label>
@@ -52,20 +52,12 @@
         <Subjects :tutor-id="currentUser._id" />
       </section>
 
-      <section v-else-if="activeTab === 'Documentos'" class="section">
-        <h3>Actividades recientes</h3>
-        <ul class="activity-timeline">
-          <li v-for="(a, i) in activities" :key="i" class="activity-item">
-            <!-- <div class="activity-icon"></div> -->
-            <div class="activity-content">
-              <div class="activity-header">
-                <h4>{{ a.title }}</h4>
-                <span class="activity-date">{{ a.date }}</span>
-              </div>
-              <p>{{ a.description }}</p>
-            </div>
-          </li>
-        </ul>
+      <section v-else-if="activeTab === 'Disponibilidad'" class="section">
+        <Availability/>
+      </section>
+
+      <section v-else-if="activeTab === 'Reservas'" class="section">
+        <BookingsHistory />
       </section>
 
       
@@ -74,9 +66,7 @@
 
 
 
-      <section v-else-if="activeTab === 'Disponibilidad'" class="section">
-        <Availability/>
-      </section>
+      
     </main>
   </div>
 </template>
@@ -90,6 +80,8 @@ import { useUserStore } from "@/stores/userStore";
 import Availability from "@/components/profile/availability/availability.vue";
 import Subjects from "@/components/profile/subjects/subjects.vue";
 import Dashboard from "@/components/profile/dashboard/dashboard.vue";
+import RatingStars from "@/shared/components/RatingStars.vue";
+import BookingsHistory from "@/components/profile/bookings/BookingsHistory.vue";
 
 const auth = useAuthStore()
 
@@ -99,35 +91,12 @@ const { currentUser } = storeToRefs(usersStore);
 
 
 const activeTab = ref("Resumen");
-const tabs = ["Resumen", "Materias a Impartir", "Disponibilidad", "Documentos"];
+const tabs = ["Resumen", "Materias a Impartir", "Disponibilidad", "Reservas"];
 
-const activities = ref([
-  {
-    title: "Clase de repaso de Cálculo",
-    date: "15 Oct 2025",
-    description: "Sesión enfocada en integrales dobles.",
-  },
-  {
-    title: "Taller de funciones",
-    date: "18 Oct 2025",
-    description: "Revisión de límites y continuidad.",
-  },
-]);
 
-const schedule = ref([
-  { day: "Lunes", time: "8:00 - 10:00", status: "Disponible" },
-  { day: "Martes", time: "14:00 - 16:00", status: "Ocupado" },
-  { day: "Miércoles", time: "10:00 - 12:00", status: "Disponible" },
-  { day: "Jueves", time: "15:00 - 17:00", status: "Disponible" },
-  { day: "Viernes", time: "9:00 - 11:00", status: "Ocupado" },
-]);
-
-const documents = ref([
-  { name: "Guía de ejercicios", type: "PDF" },
-  { name: "Taller de límites", type: "Word" },
-]);
 
 const goBack = () => router.back();
+
 function handleLogout() {
   auth.logout()
   router.push({path: '/'})

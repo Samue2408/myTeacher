@@ -35,16 +35,16 @@
 
         <div class="menu-trigger" @click.stop="toggleMenu">
           <span class="material-icons"> more_vert </span>
+          <MenuModal
+            :items="menuItems"
+            :row="booking"
+            :isOpen="isMenuOpen"
+            :dividerIndex="null"
+            :itemRed="2"
+            @closed="isMenuOpen = false"
+          />
         </div>
 
-        <MenuModal
-          :items="menuItems"
-          :row="booking"
-          :isOpen="isMenuOpen"
-          :dividerIndex="null"
-          :itemRed="2"
-          @closed="isMenuOpen = false"
-        />
       </div>
 
       <div class="main">
@@ -101,21 +101,21 @@ const toggleMenu = () => {
 const menuItems = [
   {
     label: "Ir al enlace",
-    icon: "icon-link",
+    icon: "link",
     action: (row: BookingsType) => {
       console.log("Ir al enlace:", row);
     },
   },
   {
     label: "Ir a calendario",
-    icon: "icon-calendar",
+    icon: "schedule",
     action: (row: BookingsType) => {
       console.log("Ir al calendario:", row);
     },
   },
   {
     label: "Cancelar clase",
-    icon: "icon-close",
+    icon: "close",
     class: "red",
     action: (row: BookingsType) => {
       console.log("Cancelar clase:", row);
