@@ -41,7 +41,6 @@ const $props = defineProps<{
   styles?: string;
 }>();
 
-console.log($props.styles)
 
 const emit = defineEmits(["update:modelValue"]);
 

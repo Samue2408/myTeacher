@@ -6,6 +6,7 @@ import { useUserStore } from './userStore';
 import { useSubjectsStore } from './subjectStore';
 import router from "@/router";
 import { useDashboardStore } from './dashboardStore';
+import { useAvailabilitiesStore } from './availabilitiesStore';
 
 interface AuthState {
   isAuthenticated: boolean
@@ -37,7 +38,6 @@ export const useAuthStore = defineStore('auth', {
 
         const userStore = useUserStore()
         const decode: TokenUser = jwtDecode<TokenUser>(response.token)
-        console.log(decode)
         await userStore.fetchUser(decode.idUser)
 
         this.isAuthenticated = true
@@ -70,11 +70,13 @@ export const useAuthStore = defineStore('auth', {
 
       const userStore = useUserStore();
       const subjectStore = useSubjectsStore();
-      const dashboardStore = useDashboardStore()
+      const dashboardStore = useDashboardStore();
+      const availabilitiesStore = useAvailabilitiesStore();
 
-      subjectStore.$reset()
-      dashboardStore.$reset()
+      subjectStore.$reset();
+      dashboardStore.$reset();
       userStore.clearUser();
+      availabilitiesStore.$reset();
 
     },
 

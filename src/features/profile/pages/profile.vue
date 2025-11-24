@@ -52,7 +52,7 @@
         <Subjects :tutor-id="currentUser._id" />
       </section>
 
-      <section v-else-if="activeTab === 'Disponibilidad'" class="section">
+      <section v-else-if="activeTab === 'Documentos'" class="section">
         <h3>Actividades recientes</h3>
         <ul class="activity-timeline">
           <li v-for="(a, i) in activities" :key="i" class="activity-item">
@@ -74,18 +74,8 @@
 
 
 
-      <section v-else-if="activeTab === 'Documentos'" class="section">
-        <h3>Documentos compartidos</h3>
-        <div v-if="documents.length" class="docs">
-          <div v-for="(doc, i) in documents" :key="i" class="doc">
-            <p>
-              <strong>{{ doc.name }}</strong>
-            </p>
-            <p class="type">{{ doc.type }}</p>
-            <button class="primary small">Ver documento</button>
-          </div>
-        </div>
-        <p v-else class="empty">No hay documentos disponibles.</p>
+      <section v-else-if="activeTab === 'Disponibilidad'" class="section">
+        <Availability/>
       </section>
     </main>
   </div>
@@ -97,7 +87,7 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/stores/authStore";
 import { useUserStore } from "@/stores/userStore";
-
+import Availability from "@/components/profile/availability/availability.vue";
 import Subjects from "@/components/profile/subjects/subjects.vue";
 import Dashboard from "@/components/profile/dashboard/dashboard.vue";
 
@@ -176,7 +166,7 @@ onMounted(async () => {
 .back {
   background: none;
   border: none;
-  color: #4a6cf7;
+  color: #2354b6;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -296,8 +286,8 @@ onMounted(async () => {
   transition: all 0.2s;
 }
 .tabs button.active {
-  color: #4a6cf7;
-  border-color: #4a6cf7;
+  color: #2354b6;
+  border-color: #2354b6;
   font-weight: 600;
 }
 
@@ -315,7 +305,7 @@ onMounted(async () => {
 }
 .progress {
   height: 100%;
-  background: #4a6cf7;
+  background: #2354b6;
   border-radius: 8px;
 }
 
@@ -332,7 +322,7 @@ onMounted(async () => {
   font-size: 15px;
 }
 .primary {
-  background: #4a6cf7;
+  background: #2354b6;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -373,7 +363,7 @@ onMounted(async () => {
 .activity-icon {
   width: 14px;
   height: 14px;
-  background: #4a6cf7;
+  background: #2354b6;
   border-radius: 50%;
   margin-right: 12px;
   position: relative;
@@ -441,27 +431,7 @@ onMounted(async () => {
   transform: translateY(-2px);
 }
 
-.docs {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.doc {
-  background: #fff;
-  border-radius: 8px;
-  padding: 14px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-  width: 180px;
-}
-.doc .type {
-  color: #777;
-  font-size: 13px;
-}
-.empty {
-  color: #777;
-  font-style: italic;
-  margin-top: 10px;
-}
+
 
 .loading {
   display: flex;
@@ -473,7 +443,7 @@ onMounted(async () => {
   width: 50px;
   height: 50px;
   border: 5px solid #eee;
-  border-top-color: #4a6cf7;
+  border-top-color: #2354b6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

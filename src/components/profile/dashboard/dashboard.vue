@@ -86,6 +86,6 @@ onMounted(async () => {
   flex-direction: column;
   justify-content: space-between;
   gap: 20px;  
-  width: 25%;
+  width: 30%;
 }
 </style>

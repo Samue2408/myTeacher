@@ -13,7 +13,7 @@
           ]"
           @click.stop="handleClick(item)"
         >
-          <i :class="getDynamicValue(item.icon, row, i)"></i>
+          <i class="material-icons-outlined">{{ item.icon }}</i>
           {{ getDynamicValue(item.label, row, i) }}
         </li>
       </template>
@@ -136,7 +136,7 @@ const getDynamicValue = (value, row, index) => {
 
       .option {
         border-radius: 6px;
-        padding: 0.5rem 0.6rem;
+        padding: 0.3rem 0.6rem;
 
         &.selected {
           background-color: $dark-blue-bg;

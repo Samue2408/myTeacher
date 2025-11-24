@@ -266,14 +266,16 @@ export default {
           studentId: useUserStore().userId,
           tutorId: this.selectedSubject.tutor.id,
           subjectId: this.selectedSubject.id,
-          type: "virtual",
-          location: "virtual",
+          type: "Virtual",
+          location: "Virtual",
           status: "Pendiente",
           date: this.startDate,
           startTime: "14:00",
           endTime: "18:00",
           price: this.selectedSubject.price,
         };
+
+        console.log(this.selectedSubject)
 
         const response = await BookingsService.createBooking(JSON.stringify(booking));
 

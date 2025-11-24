@@ -1,7 +1,7 @@
 <template>
     <div class="header">
         <h3>Soy tutor de estas materias</h3>
-        <button @click="modalAddUpdate=true">Agregar</button>
+        <button @click="modalAddUpdate = true">Agregar</button>
     </div>
     <div class="subjects-grid">
         <template v-if="loading">
@@ -45,7 +45,7 @@
                             <button @click="deleteSubject(h._id)">
                                 <span class="delete material-icons">delete</span>
                             </button>
-                            <button @click="modalAddUpdate=true; subjectUpdate=h">
+                            <button @click="modalAddUpdate = true; subjectUpdate = h">
                                 <span class="edit material-icons">edit</span>
                             </button>
                         </div>
@@ -58,24 +58,21 @@
             No se encontraron materias
         </div>
     </div>
-    <ModalSubjects 
-        v-if="modalAddUpdate" 
-        @close="() => { modalAddUpdate = false; subjectUpdate = null }"
-        :subject-to-edit="subjectUpdate"
-    />
+    <ModalSubjects v-if="modalAddUpdate" @close="() => { modalAddUpdate = false; subjectUpdate = null }"
+        :subject-to-edit="subjectUpdate" />
 </template>
 
 
 <script setup>
 import { useSubjectsStore } from "@/stores/subjectStore";
-import { onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import ModalSubjects from "./modalSubjects.vue";
 const subjectsStore = useSubjectsStore();
 const { SubjectsTutor, loading } = storeToRefs(subjectsStore);
 
 const modalAddUpdate = ref(false)
-const subjectUpdate = ref({})
+const subjectUpdate = ref(null)
 
 const $props = defineProps({
     tutorId: String
@@ -120,7 +117,7 @@ onMounted(async () => {
     gap: 5px;
     color: white;
     font-size: 14px;
-    padding: 12px;
+    padding: 6px 12px;
     background-color: #08B294;
     border-radius: 6px;
 }
@@ -183,18 +180,28 @@ onMounted(async () => {
     border-radius: 6px;
 }
 
-.subjects-cell .category .university {
-    color: rgb(27, 79, 114);
+.subjects-cell .category .universitaria {
+    color: #16A085;
     /* background-color: rgba(27, 79, 114, 0.10); */
 }
 
-.subjects-cell .category .secundary {
-    color: #5d5dd9;
+.subjects-cell .category .secundaria {
+    color: #D35400;
     /* background-color: #E9EAFF; */
 }
 
+.subjects-cell .category .primaria {
+    color: #C0392B;
+    /* background-color: #E9EAFF; */
+}
+
+.subjects-cell .category .postgrado {
+    color: #7B3FA0;
+    /* background-color: #FCF7EB; */
+}
+
 .subjects-cell .category .general {
-    color: #dc8323;
+    color: #2E5C9A;
     /* background-color: #FCF7EB; */
 }
 

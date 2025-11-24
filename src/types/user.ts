@@ -9,3 +9,14 @@ export interface User {
   reputation?: Object
   validatedTeacher?: boolean
 }
+
+export interface Availabilitytype {
+  active: boolean
+  dayOfWeek?: string
+  date?: string
+  endTime: string
+  isRecurring: boolean
+  startTime: string
+  tutorId: string
+  _id: string
+}

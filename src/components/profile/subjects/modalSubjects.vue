@@ -105,10 +105,10 @@ watch(
 // Opciones de nivel educativo
 const educationLevels = [
   { label: "General", value: "General" },
-  { label: "Profesional", value: "Postgraduate" },
-  { label: "Universidad", value: "University" },
-  { label: "Secundaria", value: "Secundary" },
-  { label: "Primaria", value: "Primary" },
+  { label: "Postgrado", value: "Postgrado" },
+  { label: "Universidad", value: "Universidad" },
+  { label: "Secundaria", value: "Secundaria" },
+  { label: "Primaria", value: "Primaria" },
 ];
 
 const inputStyle = "white";

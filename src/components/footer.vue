@@ -53,7 +53,7 @@
 
 <style scoped>
 .footer {
-  background-color: #5b8de3;
+  background-color: var(--color-primary);
   color: #fff;
   font-family: "Inter", sans-serif;
 }
