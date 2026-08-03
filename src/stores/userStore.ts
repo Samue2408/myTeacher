@@ -35,6 +35,13 @@ export const useUserStore = defineStore('user', {
       this.allUsers = await UsersService.getAll();
     },
 
+    async updateCurrentUser(payload: Partial<User>) {
+      if (!this.currentUser?._id) return;
+
+      const updatedUser = await UsersService.update(this.currentUser._id, payload);
+      this.currentUser = { ...this.currentUser, ...updatedUser };
+    },
+
     clearUser() {
       this.currentUser = null;
       this.allUsers = [];

@@ -15,7 +15,7 @@ export function useDashboardSync(tutorId: string) {
   watch(
     [
       () => subjectsStore.SubjectsTutor.length,
-      () => bookingsStore.tutorBookings.length, 
+      () => bookingsStore.tutorBookings.map((booking) => `${booking._id}-${booking.status}`),
     ],
     () => {
       dashboardStore.refreshDashboardsByTutor(tutorId);

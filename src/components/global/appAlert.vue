@@ -1,4 +1,3 @@
-<!-- src/components/global/AppAlert.vue -->
 <template>
   <transition name="fade">
     <div v-if="errorMessage" class="alert alert-error">

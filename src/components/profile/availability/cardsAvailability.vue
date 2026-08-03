@@ -113,7 +113,7 @@ onMounted(() => {
 
 
 .availability {
-  min-width: 220px;
+  width: 250px;
   position: relative;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;

@@ -43,7 +43,7 @@
 
     <div class="nav__buttons">
       <div v-if="auth.isAuthenticated">
-        <button @click="goToBookins">Mis reservas</button>
+        <button v-if="user.currentUser.role === 'Estudiante' " @click="goToBookins">Mis reservas</button>
         <div class="nav__profile" @click="goToProfile">
           <img
             v-if="user.currentUser.image"
@@ -57,7 +57,7 @@
       </div>
 
       <div v-else>
-        <button class="btn-sign__up">Registrarme</button>
+        <button class="btn-sign__up" @click="goToSignUp">Registrarme</button>
         <button class="btn-sign__in" @click="goToLogIn">Iniciar sesión</button>
       </div>
     </div>
@@ -123,6 +123,7 @@ const goToSearch = (q) => {
 };
 
 const goToLogIn = () => router.push({ path: "/user/login" });
+const goToSignUp = () => router.push({ path: "/user/signup" });
 const toggleSearch = () => (showSearch.value = !showSearch.value);
 </script>
 

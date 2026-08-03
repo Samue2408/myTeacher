@@ -1,6 +1,7 @@
 export interface BookingsType {
   _id: string;
   student: BookingStudent;
+  tutor?: BookingTutor[];
   tutorId: string;
   subject: BookingSubject;
   type: "Presencial" | "Virtual";
@@ -12,6 +13,11 @@ export interface BookingsType {
   videoCallLink?: string; // solo si aplica
   reviewsCount: number;
   price: number;
+}
+
+export interface BookingTutor {
+  _id: string;
+  name: string;
 }
 
 export interface BookingStudent {

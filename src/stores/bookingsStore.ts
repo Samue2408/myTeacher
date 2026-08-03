@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { BookingsService } from "@/api/bookings.service";
 import { useErrorHandler, useSuccessHandler } from '@/composables/useAlertsHandler';
+import { useDashboardStore } from "@/stores/dashboardStore";
 
 export const useBookingsStore = defineStore('bookings', {
     state: () => ({
@@ -69,6 +70,7 @@ export const useBookingsStore = defineStore('bookings', {
                 const index = this.tutorBookings.findIndex(b => b._id === bookingId);
                 if (index !== -1) {
                     this.tutorBookings[index].status = 'Aceptada';
+                    await useDashboardStore().refreshDashboardsByTutor(this.tutorBookings[index].tutorId);
                 }
                 handleSuccess('Reserva aceptada con éxito');
             } catch (error) {
@@ -87,8 +89,28 @@ export const useBookingsStore = defineStore('bookings', {
                 const index = this.tutorBookings.findIndex(b => b._id === bookingId);
                 if (index !== -1) {
                     this.tutorBookings[index].status = 'Cancelada';
+                    await useDashboardStore().refreshDashboardsByTutor(this.tutorBookings[index].tutorId);
                 }
                 handleSuccess('Reserva rechazada');
+            } catch (error) {
+                handleError(error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async completeBooking(bookingId: string) {
+            const { handleError } = useErrorHandler();
+            const { handleSuccess } = useSuccessHandler();
+            this.isLoading = true;
+            try {
+                await BookingsService.update(bookingId, { status: 'Completada' });
+                const index = this.tutorBookings.findIndex(b => b._id === bookingId);
+                if (index !== -1) {
+                    this.tutorBookings[index].status = 'Completada';
+                    await useDashboardStore().refreshDashboardsByTutor(this.tutorBookings[index].tutorId);
+                }
+                handleSuccess('La clase se marcó como completada.');
             } catch (error) {
                 handleError(error);
             } finally {
@@ -99,6 +121,11 @@ export const useBookingsStore = defineStore('bookings', {
         async refreshBookingsByTutor(tutorId: string) {
             this.loadedTutorId = null;
             await this.fetchBookingsByTutor(tutorId);
+        },
+
+        async refreshBookingsByStudent(studentId: string) {
+            this.loadedStudentId = null;
+            await this.fetchBookingsByStudent(studentId);
         }
     }
 });

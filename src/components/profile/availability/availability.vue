@@ -77,7 +77,7 @@ h5 {
 
 .availabilities {
   display: flex;
-  gap: 16px;
+  gap: 40px 16px;
   flex-wrap: wrap;
 }
 

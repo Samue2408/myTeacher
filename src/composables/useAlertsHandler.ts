@@ -4,34 +4,18 @@ import { useAuthStore } from "@/stores/authStore";
 export function useErrorHandler() {
   const appStore = useAppStore();
   const authStore = useAuthStore();
-
-  function handleError(error: any, defaultMessage = "Ocurrió un error inesperado") {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      error ||
-      defaultMessage;
-
-    appStore.setError(message);
-    if (error.response && error.response?.status === 401) {
-      authStore.restoreSession();
-    }
-  }
-
+  const handleError = (error: any, defaultMessage = "No pudimos completar la acción. Inténtalo de nuevo.") => {
+    appStore.setError(error?.response?.data?.message || error?.message || defaultMessage);
+    if (error?.response?.status === 401) authStore.restoreSession();
+  };
   return { handleError };
 }
 
 export function useSuccessHandler() {
   const appStore = useAppStore();
-
-  function handleSuccess(response: any) {
-    const message =
-      response?.data?.message ||
-      response.message ||
-      response;
-
+  const handleSuccess = (response: any) => {
+    const message = response?.data?.message || response?.message || (typeof response === "string" ? response : "¡Listo! Tus cambios se guardaron correctamente.");
     appStore.setSuccess(message);
-  }
-
+  };
   return { handleSuccess };
 }

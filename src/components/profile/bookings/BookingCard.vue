@@ -50,17 +50,21 @@
                     <span class="material-icons-outlined">mode_comment</span>
                     <p>{{ $props.booking.reviewsCount }}</p>
                 </button>
-                <button v-if="$props.booking.type.toLowerCase() == 'virtual' && !$props.pending" class="action" :title="$props.booking.videoCallLink">                        
+                <a v-if="$props.booking.type.toLowerCase() == 'virtual' && !$props.pending && $props.booking.videoCallLink" class="action video-link" :href="$props.booking.videoCallLink" target="_blank" rel="noopener" title="Unirse a la videollamada">                        
                     <span class="material-icons-outlined link">link</span>
-            </button>
+            </a>
         </div>
         
-        <div v-if="$props.pending" class="booking-actions">
+        <div v-if="$props.pending && !isPastBooking" class="booking-actions">
           <button class="btn-accept" @click="handleAccept" :disabled="isLoading">Aceptar</button>
           <button class="btn-reject" @click="handleReject" :disabled="isLoading">Rechazar</button>
         </div>
+        <div v-else-if="$props.pending && isPastBooking" class="expired-status">
+          <span class="material-icons-outlined">event_busy</span> Reserva vencida
+        </div>
         <div v-else class="booking-status">
           <span :class="`status ${$props.booking.status.toLowerCase()}`">{{ $props.booking.status }}</span>
+          <button v-if="canComplete" class="btn-complete" @click="handleComplete" :disabled="isLoading">Marcar como completada</button>
         </div>
 
       </div>
@@ -69,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps } from "vue";
+import { computed, ref } from "vue";
 import { BookingsType } from "@/types/bookings";
 import type {PropType} from "vue"
 
@@ -88,20 +92,87 @@ const $props = defineProps({
   },
 });
 
-const emit = defineEmits(["accept", "reject"]);
+const emit = defineEmits(["accept", "reject", "complete"]);
 
 const showDetails = ref(false);
 
-// Formatear fecha
-const formatDate = (date: string | number | Date | null | undefined): string => {
-  if (!date) return "";
-  const d = new Date(date);
-  const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
-  return d.toLocaleDateString("es-ES", options);
+const normalizeDateOnly = (value: string | number | Date | null | undefined) => {
+  if (!value) return null;
+
+  if (value instanceof Date) {
+    return {
+      year: value.getUTCFullYear(),
+      month: value.getUTCMonth() + 1,
+      day: value.getUTCDate(),
+    };
+  }
+
+  const rawValue = String(value).trim();
+  const dateMatch = rawValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (dateMatch) {
+    const [, year, month, day] = dateMatch;
+    return {
+      year: Number(year),
+      month: Number(month),
+      day: Number(day),
+    };
+  }
+
+  const parsedDate = new Date(rawValue);
+  if (!Number.isNaN(parsedDate.getTime())) {
+    return {
+      year: parsedDate.getUTCFullYear(),
+      month: parsedDate.getUTCMonth() + 1,
+      day: parsedDate.getUTCDate(),
+    };
+  }
+
+  return null;
 };
 
-function formatCurrency(value) {
-  const format = (num) =>
+const getBookingDateTimeKey = (dateValue: string | number | Date | null | undefined, timeValue?: string | null) => {
+  const normalizedDate = normalizeDateOnly(dateValue);
+  if (!normalizedDate) return null;
+
+  const timeParts = String(timeValue || "23:59").split(":");
+  const hour = Number(timeParts[0] || 23);
+  const minute = Number(timeParts[1] || 59);
+
+  return Number(
+    `${normalizedDate.year}${String(normalizedDate.month).padStart(2, "0")}${String(normalizedDate.day).padStart(2, "0")}${String(hour).padStart(2, "0")}${String(minute).padStart(2, "0")}`
+  );
+};
+
+const isPastBooking = computed(() => {
+  const bookingKey = getBookingDateTimeKey($props.booking.date, $props.booking.endTime);
+  if (!bookingKey) return false;
+
+  const now = new Date();
+  const nowKey = Number(
+    `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`
+  );
+
+  return bookingKey < nowKey;
+});
+const canComplete = computed(() => !$props.pending && $props.booking.status === 'Aceptada' && isPastBooking.value);
+
+// Formatear fecha
+const formatDate = (date: string | number | Date | null | undefined): string => {
+  const normalizedDate = normalizeDateOnly(date);
+  if (!normalizedDate) return "";
+
+  const utcDate = new Date(Date.UTC(normalizedDate.year, normalizedDate.month - 1, normalizedDate.day));
+  return new Intl.DateTimeFormat("es-ES", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(utcDate);
+};
+
+function formatCurrency(value: number): string {
+  const format = (num: number): string =>
     Number.isInteger(num) ? num.toString() : num.toFixed(1);
 
   if (value >= 1_000_000) {
@@ -119,6 +190,10 @@ const handleAccept = () => {
 
 const handleReject = () => {
   emit("reject", $props.booking);
+};
+
+const handleComplete = () => {
+  emit("complete", $props.booking);
 };
 </script>
 
@@ -239,7 +314,12 @@ const handleReject = () => {
 .booking-status {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
+
+.btn-complete { padding: 7px 9px; border: 1px solid #1d7c50; border-radius: 6px; background: #fff; color: #1d7c50; font-size: 11px; font-weight: 700; cursor: pointer; }
+.btn-complete:hover:not(:disabled) { background: #eaf7ef; }
+.btn-complete:disabled { opacity: .6; cursor: not-allowed; }
 
 hr {
   border: 0.5px solid #e8e8e8;
@@ -319,6 +399,9 @@ hr {
   display: flex;
   gap: 10px;
 }
+
+.expired-status { display: flex; align-items: center; gap: 4px; color: #8a6200; font-size: 11px; font-weight: 700; }
+.expired-status .material-icons-outlined { font-size: 16px; }
 
 .btn-accept,
 .btn-reject {

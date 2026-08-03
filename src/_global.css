@@ -135,6 +135,31 @@ table {
   border-spacing: 0;
 }
 
+input::placeholder {
+  color: #aaa;
+  font-weight: 400;
+  opacity: 1; 
+}
+
+/* Para navegadores WebKit (Chrome, Safari, Edge) */
+input::-webkit-input-placeholder {
+  color: #aaa;
+  font-weight: 400;
+  opacity: 1; 
+}
+
+/* Para Firefox */
+input::-moz-placeholder {
+  color: #aaa;
+  font-weight: 400;
+  opacity: 1; 
+}
+
+/* Para navegadores antiguos (IE 10+, Edge antiguo) */
+input:-ms-input-placeholder {
+  color: #aaa;
+}
+
 /* ===========================
     Utilidades rápidas
    =========================== */

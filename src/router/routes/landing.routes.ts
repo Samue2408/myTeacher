@@ -10,6 +10,7 @@ const landingRoutes: RouteRecordRaw[] = [
     path: "/search",
     name: "search",
     component: () => import("@/features/landing/pages/search.vue"),
+    meta: { requiresAuth: true },
 
   },
 ];

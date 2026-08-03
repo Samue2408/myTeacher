@@ -1,6 +1,6 @@
 <template>
   <div class="chart-container">
-    <h4 class="chart-title">Reservas por día del mes actual</h4>
+    <h4 class="chart-title">Tutorías por día del mes actual</h4>
     <div class="chart-wrapper">
       <canvas ref="chartRef"></canvas>
     </div>
@@ -83,7 +83,7 @@ const initChart = () => {
       labels,
       datasets: [
         {
-          label: "Clases Reservadas",
+          label: "Clases Dadas",
           data: counts,
           borderColor: "#667eea",
           backgroundColor: "rgba(102, 126, 234, 0.1)",

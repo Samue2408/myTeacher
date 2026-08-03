@@ -108,17 +108,18 @@ async function handleLogin() {
     await auth.login(user);
 
     if (auth.token) {
-      if(userStore.currentUser.role == 'Estudiante'){
-        router.push({ path: "/search" });
-      } else {
         router.push({ path: "/profile/1" });
-      }
     } else {
-      errorMsg.value = "Credenciales incorrectas";
+      errorMsg.value = "No se pudo iniciar sesión.";
     }
   } catch (err: any) {
     console.error("Error en login:", err);
-    errorMsg.value = err.response?.data?.message || "No se pudo iniciar sesión. Intenta de nuevo más tarde.";
+    
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      errorMsg.value = "Correo o contraseña incorrectos";
+    } else {
+      errorMsg.value = err.response?.data?.message || "No se pudo iniciar sesión. Intenta de nuevo más tarde.";
+    }
   } finally {
     loading.value = false;
   }
