@@ -46,7 +46,7 @@
                 <button class="action" @click="showDetails = !showDetails" title="Más información">                        
                     <span class="material-icons-outlined">info</span>
                 </button>
-                <button v-if="!$props.pending" class="action" title="Comentarios">                        
+                <button v-if="canViewReview" class="action" type="button" title="Ver reseña" @click="emit('review', $props.booking)">                        
                     <span class="material-icons-outlined">mode_comment</span>
                     <p>{{ $props.booking.reviewsCount }}</p>
                 </button>
@@ -92,7 +92,7 @@ const $props = defineProps({
   },
 });
 
-const emit = defineEmits(["accept", "reject", "complete"]);
+const emit = defineEmits(["accept", "reject", "complete", "review"]);
 
 const showDetails = ref(false);
 
@@ -156,6 +156,7 @@ const isPastBooking = computed(() => {
   return bookingKey < nowKey;
 });
 const canComplete = computed(() => !$props.pending && $props.booking.status === 'Aceptada' && isPastBooking.value);
+const canViewReview = computed(() => !$props.pending && $props.booking.status.toLocaleLowerCase("es-CO") === "completada");
 
 // Formatear fecha
 const formatDate = (date: string | number | Date | null | undefined): string => {
