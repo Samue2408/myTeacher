@@ -10,6 +10,7 @@
           :booking="booking"
           :isLoading="isLoading"
           @complete="handleComplete"
+          @review="openReview"
         />
       </ul>
       <p v-else class="empty-message">No hay reservas completadas.</p>
@@ -43,20 +44,38 @@
     </div>
     <ScrollToTop />
 
+    <div v-if="reviewBooking" class="review-modal-overlay" @click.self="closeReview">
+      <section class="review-modal" role="dialog" aria-modal="true" aria-labelledby="received-review-title">
+        <button class="review-close" type="button" aria-label="Cerrar reseña" @click="closeReview"><span class="material-icons-outlined">close</span></button>
+        <p class="review-eyebrow">Reseña recibida</p>
+        <h4 id="received-review-title">{{ reviewBooking.subject?.name || 'Clase completada' }}</h4>
+        <p class="review-student">Opinión de {{ reviewBooking.student?.name || 'tu estudiante' }}</p>
+        <div v-if="isReviewLoading" class="review-loading"><span class="review-spinner" /> Cargando reseña...</div>
+        <ReviewDetails v-else-if="currentReview" :review="currentReview" />
+        <p v-else class="no-review">Este estudiante aún no ha dejado una reseña para esta clase.</p>
+      </section>
+    </div>
+
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "@/stores/userStore";
 import { useBookingsStore } from "@/stores/bookingsStore";
+import { useReviewsStore } from "@/stores/reviewsStore";
 import BookingCard from "./BookingCard.vue";
 import ScrollToTop from "@/components/ScrollToTop.vue";
+import ReviewDetails from "@/shared/components/ReviewDetails.vue";
+import type { BookingsType } from "@/types/bookings";
 
 const userStore = useUserStore();
 const bookingsStore = useBookingsStore();
+const reviewsStore = useReviewsStore();
 const { isLoading } = storeToRefs(bookingsStore);
+const { currentReview, isLoading: isReviewLoading } = storeToRefs(reviewsStore);
+const reviewBooking = ref<BookingsType | null>(null);
 const pageSize = 5;
 const acceptedPage = ref(1);
 const pendingPage = ref(1);
@@ -79,6 +98,16 @@ const handleReject = async (booking) => {
 
 const handleComplete = async (booking) => {
   await bookingsStore.completeBooking(booking._id);
+};
+
+const openReview = async (booking: BookingsType) => {
+  reviewBooking.value = booking;
+  await reviewsStore.fetchByBooking(booking._id);
+};
+
+const closeReview = () => {
+  reviewBooking.value = null;
+  reviewsStore.clearCurrentReview();
 };
 
 // Cargar bookings al montar el componente
@@ -145,6 +174,13 @@ onMounted(async () => {
 .pagination button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #dce2ea; border-radius: 7px; background: #fff; color: var(--color-primary); cursor: pointer; }
 .pagination button:disabled { opacity: .45; cursor: not-allowed; }
 .pagination .material-icons-outlined { font-size: 18px; }
+.review-modal-overlay { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 20px; background: rgba(16, 24, 40, .52); }
+.review-modal { position: relative; width: min(100%, 420px); padding: 26px; border-radius: 14px; background: #fff; box-shadow: 0 16px 40px rgba(16, 24, 40, .2); }
+.review-close { position: absolute; top: 12px; right: 12px; display: grid; padding: 4px; border: 0; background: transparent; color: #68758a; cursor: pointer; }
+.review-eyebrow { margin: 0 0 4px; color: var(--color-primary); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.review-modal h4 { margin: 0; color: #252b34; font-size: 19px; }.review-student { margin: 6px 0 0; color: #727b88; font-size: 13px; }
+.review-loading { display: flex; align-items: center; gap: 9px; min-height: 80px; color: #737b88; font-size: 13px; }.review-spinner { width: 18px; height: 18px; border: 2px solid #dce4f2; border-top-color: var(--color-primary); border-radius: 50%; animation: spin .8s linear infinite; }
+.no-review { margin: 20px 0 0; padding: 14px; border-radius: 8px; background: #f6f8fa; color: #687383; font-size: 13px; line-height: 1.5; }@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Responsive */
 @media (max-width: 768px) {

@@ -8,6 +8,7 @@ import router from "@/router";
 import { useDashboardStore } from './dashboardStore';
 import { useAvailabilitiesStore } from './availabilitiesStore';
 import { useBookingsStore } from './bookingsStore';
+import { useReviewsStore } from './reviewsStore';
 
 interface AuthState {
   isAuthenticated: boolean
@@ -74,12 +75,14 @@ export const useAuthStore = defineStore('auth', {
       const dashboardStore = useDashboardStore();
       const availabilitiesStore = useAvailabilitiesStore();
       const bookingsStore = useBookingsStore();
+      const reviewsStore = useReviewsStore();
 
       subjectStore.$reset();
       dashboardStore.$reset();
       userStore.clearUser();
       availabilitiesStore.$reset();
       bookingsStore.$reset();
+      reviewsStore.$reset();
     },
 
   }
