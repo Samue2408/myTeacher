@@ -1,12 +1,12 @@
 export interface BookingsType {
   _id: string;
   student: BookingStudent;
-  tutor?: BookingTutor[];
+  tutor?: BookingTutor;
   tutorId: string;
   subject: BookingSubject;
   type: "Presencial" | "Virtual";
   location: string;
-  status: "Completada" | "Cancelada" | "Pendiente" | "Aceptada";
+  status: "Completada" | "Cancelada" | "Pendiente por aceptar" | "Aceptada" | "Expirada" | "Pendiente por pago";
   date: string;      // ISO string
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm"

@@ -106,7 +106,7 @@ watch(
 const educationLevels = [
   { label: "General", value: "General" },
   { label: "Postgrado", value: "Postgrado" },
-  { label: "Universidad", value: "Universidad" },
+  { label: "Universitaria", value: "Universitaria" },
   { label: "Secundaria", value: "Secundaria" },
   { label: "Primaria", value: "Primaria" },
 ];

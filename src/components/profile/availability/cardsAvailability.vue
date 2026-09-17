@@ -4,7 +4,7 @@
             'availability-back',
             availability.dayOfWeek ? availability.dayOfWeek.toLowerCase() : 'puntual'
         ]">
-        <p><strong>{{ availability.active ? 'Activo': 'Desactivo' }}</strong></p>
+        <p><strong>{{ availability.active ? 'Activo': 'Inactivo' }}</strong></p>
       </div>
       <div :class="[
             'content',
@@ -148,7 +148,7 @@ onMounted(() => {
   border-color: #CC0000;    
 }
 
-.miercoles {
+.miércoles {
   background-color: #228B22;
   border-color: #228B22;    
 }
@@ -186,7 +186,6 @@ onMounted(() => {
   padding: 14px 20px;
   border-radius: 8px;
   background-color: #fff;
-  z-index: 1;
 }
 
 .availability .content .content-header {

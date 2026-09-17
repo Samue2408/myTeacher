@@ -13,9 +13,9 @@ export class BookingsServiceClass extends BaseService {
         `${this.basePath}/count/tutor-bookings/${tutorId}`
       );
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || "Error al obtener las reservas."
+        error.response?.data?.message || error.response?.data || "Error al obtener las reservas."
       );
     }
   }
@@ -26,9 +26,9 @@ export class BookingsServiceClass extends BaseService {
         `${this.basePath}/count/student-bookings/${studentId}`
       );
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || "Error al obtener las reservas del estudiante."
+        error.response?.data?.message || error.response?.data || "Error al obtener las reservas del estudiante."
       );
     }
   }
@@ -44,7 +44,7 @@ export class BookingsServiceClass extends BaseService {
       return response.data;
     } catch (error: any) {
       throw new Error(
-        error.response?.data?.message || "Error al crear la reserva."
+        error.response?.data?.message || error.response?.data || "Error al crear la reserva."
       );
     }
   }

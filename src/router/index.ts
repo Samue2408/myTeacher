@@ -49,6 +49,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
   const user = useUserStore();
+  await auth.restoreSession();
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     auth.showLoginModal = true;
@@ -61,7 +62,6 @@ router.beforeEach(async (to, from, next) => {
   } 
   else {
     
-    await auth.restoreSession();
 
     // Verificación para el perfil
     if (to.name === "profile" && to.params.id !== user.currentUser?._id) {

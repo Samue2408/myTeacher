@@ -15,12 +15,12 @@ export const useBookingsStore = defineStore('bookings', {
     getters: {
         acceptedBookings: (state) => {
             return state.tutorBookings
-                .filter(b => b.status !== 'Pendiente')
+                .filter(b => b.status === 'Cancelada' || b.status === 'Completada' || b.status === 'Aceptada')
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).reverse();
         },
         pendingBookings: (state) => {
             return state.tutorBookings
-                .filter(b => b.status === 'Pendiente')
+                .filter(b => b.status === 'Pendiente por Aceptar')
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).reverse();
         },
         isLoadedForTutor: (state) => (tutorId: string) =>

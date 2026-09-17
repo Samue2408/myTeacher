@@ -51,7 +51,10 @@
 
           <footer class="reserva-footer">
             <strong class="price">{{ formatCurrency(booking.price) }}</strong>
-            <button class="details-button" type="button" @click="selectedBooking = booking">Ver detalles</button>
+            <div>
+              <button v-if="(booking.status == 'Pendiente por pago')" class="clear-filters" @click="handlePayment(booking._id)">Pagar</button>
+              <button  class="details-button" type="button" @click="selectedBooking = booking">Ver detalles</button>
+            </div>
           </footer>
         </article>
       </transition-group>
@@ -96,6 +99,7 @@ import ComboBox from "@/shared/components/comboBox.vue";
 import { useBookingsStore } from "@/stores/bookingsStore";
 import { useUserStore } from "@/stores/userStore";
 import type { BookingsType } from "@/types/bookings";
+import { useRouter } from "vue-router";
 
 const bookingsStore = useBookingsStore();
 const userStore = useUserStore();
@@ -107,6 +111,7 @@ const tutorFilter = ref("");
 const selectedBooking = ref<BookingsType | null>(null);
 const bookings = computed<BookingsType[]>(() => bookingsStore.studentBookings ?? []);
 
+const router = useRouter();
 const statusOptions = [
   { label: "Todos los estados", value: "" },
   { label: "Pendientes", value: "Pendiente" },
@@ -115,7 +120,7 @@ const statusOptions = [
   { label: "Canceladas", value: "Cancelada" },
 ];
 
-const getTutorName = (booking: BookingsType) => booking.tutor?.[0]?.name || "Tutor no disponible";
+const getTutorName = (booking: BookingsType) => booking.tutor?.name || "Tutor no disponible";
 
 const tutorOptions = computed(() => {
   const names = [...new Set(bookings.value.map(getTutorName).filter((name) => name !== "Tutor no disponible"))];
@@ -126,6 +131,15 @@ const filteredBookings = computed(() => bookings.value.filter((booking) =>
   (!statusFilter.value || booking.status === statusFilter.value) &&
   (!tutorFilter.value || getTutorName(booking) === tutorFilter.value)
 ));
+
+const handlePayment = (id: string) => {
+  const env = import.meta.env.VITE_ENV;
+  if(env == "development") {
+    router.push('/payment')
+  } else {
+    router.push(`/payment/mercado-pago/${id}`)
+  }
+}
 
 const hasActiveFilters = computed(() => Boolean(statusFilter.value || tutorFilter.value));
 const clearFilters = () => { statusFilter.value = ""; tutorFilter.value = ""; };

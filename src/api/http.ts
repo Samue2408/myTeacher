@@ -20,9 +20,10 @@ http.interceptors.request.use(config => {
 http.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.log("Error: ", error)
     const appStore = useAppStore();
     const message =
-      error.response?.data?.message || "Error inesperado en el servidor";
+      error.response?.data?.message || error.response?.data || error.response?.message || "Error inesperado en el servidor";
     appStore.setError(message);
     // Evita que Axios lance el error al console
     return Promise.reject(error);

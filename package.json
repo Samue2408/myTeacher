@@ -13,6 +13,7 @@
     "host": "vite --host"
   },
   "dependencies": {
+    "@mercadopago/sdk-js": "^0.0.3",
     "axios": "^1.13.1",
     "chart.js": "^4.5.1",
     "jwt-decode": "^4.0.0",

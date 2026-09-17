@@ -105,7 +105,7 @@ const props = defineProps({
 const dayOfWeeks = [
   { label: "Lunes", value: "Lunes" },
   { label: "Martes", value: "Martes" },
-  { label: "Miercoles", value: "Miercoles" },
+  { label: "Miércoles", value: "Miércoles" },
   { label: "Jueves", value: "Jueves" },
   { label: "Viernes", value: "Viernes" },
   { label: "Sábado", value: "Sábado" },
