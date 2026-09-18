@@ -87,16 +87,16 @@ watch(acceptedPages, (pages) => { if (acceptedPage.value > pages) acceptedPage.v
 watch(pendingPages, (pages) => { if (pendingPage.value > pages) pendingPage.value = pages; });
 
 // Aceptar booking
-const handleAccept = async (booking) => {
+const handleAccept = async (booking:any) => {
   await bookingsStore.acceptBooking(booking._id);
 };
 
 // Rechazar booking
-const handleReject = async (booking) => {
+const handleReject = async (booking: any) => {
   await bookingsStore.rejectBooking(booking._id);
 };
 
-const handleComplete = async (booking) => {
+const handleComplete = async (booking: any) => {
   await bookingsStore.completeBooking(booking._id);
 };
 

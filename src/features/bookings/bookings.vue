@@ -52,7 +52,7 @@
           <footer class="reserva-footer">
             <strong class="price">{{ formatCurrency(booking.price) }}</strong>
             <div>
-              <button v-if="(booking.status == 'Pendiente por pago')" class="clear-filters" @click="handlePayment(booking._id)">Pagar</button>
+              <button v-if="(booking.status == 'Pendiente por pago' || env != 'development')" class="clear-filters" @click="handlePayment(booking._id)">Pagar</button>
               <button  class="details-button" type="button" @click="selectedBooking = booking">Ver detalles</button>
             </div>
           </footer>
@@ -135,12 +135,15 @@ const selectedBooking = ref<BookingsType | null>(null);
 const isEditingReview = ref(false);
 const reviewError = ref("");
 const reviewForm = ref({ rating: 0, comments: "" });
-const bookings = computed<BookingsType[]>(() => bookingsStore.studentBookings ?? []);
+const bookings = computed<BookingsType[]>(() => [...(bookingsStore.studentBookings ?? [])].sort((a, b) => {
+  return new Date(b.date).getTime() - new Date(a.date).getTime();
+}));
 
 const router = useRouter();
 const statusOptions = [
   { label: "Todos los estados", value: "" },
-  { label: "Pendientes", value: "Pendiente" },
+  { label: "Pendientes por aceptar", value: "Pendiente por aceptar" },
+  { label: "Pendientes por pago", value: "Pendiente por pago" },
   { label: "Aceptadas", value: "Aceptada" },
   { label: "Completadas", value: "Completada" },
   { label: "Canceladas", value: "Cancelada" },
@@ -157,9 +160,9 @@ const filteredBookings = computed(() => bookings.value.filter((booking) =>
   (!statusFilter.value || booking.status === statusFilter.value) &&
   (!tutorFilter.value || getTutorName(booking) === tutorFilter.value)
 ));
+const env = import.meta.env.VITE_ENV;
 
 const handlePayment = (id: string) => {
-  const env = import.meta.env.VITE_ENV;
   if(env == "development") {
     router.push('/payment')
   } else {

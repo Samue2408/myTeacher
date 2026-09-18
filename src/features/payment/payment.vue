@@ -67,7 +67,9 @@ const pay = async () => {
     const bookingPayload = {
       ...payload,
       ...(draft.value.type === 'Virtual' ? { videoCallLink: createJitsiLink() } : {}),
+      status: "Pendiente por aceptar" 
     };
+    console.log(bookingPayload)
     const created = await BookingsService.createBooking(bookingPayload);
     if (!created?._id) throw new Error();
 
