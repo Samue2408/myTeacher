@@ -93,7 +93,7 @@ const handleAccept = async (booking:any) => {
 
 // Rechazar booking
 const handleReject = async (booking: any) => {
-  await bookingsStore.rejectBooking(booking._id);
+  await bookingsStore.rejectBooking(booking);
 };
 
 const handleComplete = async (booking: any) => {

@@ -23,6 +23,7 @@ export default defineConfig({
         secure: false,
       },
     },
+    allowedHosts: ['spoon-departed-limit.ngrok-free.dev'],
   },
   build: {
     outDir: 'dist'

@@ -52,7 +52,7 @@
           <footer class="reserva-footer">
             <strong class="price">{{ formatCurrency(booking.price) }}</strong>
             <div>
-              <button v-if="(booking.status == 'Pendiente por pago' || env != 'development')" class="clear-filters" @click="handlePayment(booking._id)">Pagar</button>
+              <button v-if="(booking.status == 'Pendiente por pago' && env == 'production')" class="clear-filters" @click="handlePayment(booking._id)">Pagar</button>
               <button  class="details-button" type="button" @click="selectedBooking = booking">Ver detalles</button>
             </div>
           </footer>

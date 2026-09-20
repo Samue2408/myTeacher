@@ -11,6 +11,18 @@ const payment: RouteRecordRaw[] = [
     component: () => import("@/features/payment/payment-summary.vue"),
   },
   {
+    path: "success",
+    redirect: "payment/result"
+  },
+  {
+    path: "success",
+    redirect: "payment/result"
+  },
+  {
+    path: "result",
+    component: () => import("@/features/payment/payment-result.vue"),
+  },
+  {
     path: "",
     component: () => import("@/features/payment/payment.vue"),
   },

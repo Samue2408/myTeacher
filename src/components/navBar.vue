@@ -31,8 +31,9 @@
       </div>
     </transition>
 
-    <div class="nav__search-desktop">
+    <div v-if="auth.isAuthenticated" class="nav__search-desktop">
       <SearchBar
+        v-if="user.currentUser.role === 'Estudiante'"
         placeholder="¿Qué materia quieres dar hoy?"
         :items="results"
         :loading="loading"

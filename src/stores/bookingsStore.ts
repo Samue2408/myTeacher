@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { BookingsService } from "@/api/bookings.service";
 import { useErrorHandler, useSuccessHandler } from '@/composables/useAlertsHandler';
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { BookingsType } from "@/types/bookings";
+import { UsersService } from "@/api/user.service";
 
 export const useBookingsStore = defineStore('bookings', {
     state: () => ({
@@ -20,7 +22,7 @@ export const useBookingsStore = defineStore('bookings', {
         },
         pendingBookings: (state) => {
             return state.tutorBookings
-                .filter(b => b.status === 'Pendiente por Aceptar')
+                .filter(b => b.status === 'Pendiente por aceptar')
                 .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).reverse();
         },
         isLoadedForTutor: (state) => (tutorId: string) =>
@@ -52,6 +54,7 @@ export const useBookingsStore = defineStore('bookings', {
             this.isLoadingStudent = true;
             try {
                 const data = await BookingsService.getByStudent(studentId);
+                console.log(data)
                 this.studentBookings = data;
                 this.loadedStudentId = studentId;
             } catch (error) {
@@ -80,17 +83,18 @@ export const useBookingsStore = defineStore('bookings', {
             }
         },
 
-        async rejectBooking(bookingId: string) {
+        async rejectBooking(booking: BookingsType) {
             const { handleError } = useErrorHandler();
             const { handleSuccess } = useSuccessHandler();
             this.isLoading = true;
             try {
-                await BookingsService.update(bookingId, { status: 'Cancelada' });
-                const index = this.tutorBookings.findIndex(b => b._id === bookingId);
+                await BookingsService.update(booking._id, { status: 'Cancelada' });
+                const index = this.tutorBookings.findIndex(b => b._id === booking._id);
                 if (index !== -1) {
                     this.tutorBookings[index].status = 'Cancelada';
                     await useDashboardStore().refreshDashboardsByTutor(this.tutorBookings[index].tutorId);
                 }
+                await UsersService.update(booking.student._id, { balance: booking.price })
                 handleSuccess('Reserva rechazada');
             } catch (error) {
                 handleError(error);

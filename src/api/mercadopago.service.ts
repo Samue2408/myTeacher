@@ -12,7 +12,8 @@ export class MercadoPagoServiceClass extends BaseService {
     try {
       const response = await http.post<PreferenceResponse>(
         `${this.basePath}/create_preference`,
-        {bookingId}
+        {bookingId, returnUrl:import.meta.env.VITE_PUBLIC_URL},
+        
       );
       return response.data;
     } catch (error: any) {
