@@ -36,7 +36,7 @@
               <span class="material-icons-outlined">trending_up</span>
               <p>Ganancia:</p>
             </div>          
-            {{ formatCurrency($props.booking.price) }}
+            {{ formatCurrency($props.booking.totalAmount) }}
           </div>
         </div>
       </Transition>

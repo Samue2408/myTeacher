@@ -13,6 +13,9 @@ export interface BookingsType {
   videoCallLink?: string; // solo si aplica
   reviewsCount: number;
   price: number;
+  discount: number;
+  preferenceId?: string;
+  totalAmount: number
 }
 
 export interface BookingTutor {

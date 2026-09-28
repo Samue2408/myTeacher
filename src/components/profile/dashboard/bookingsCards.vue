@@ -100,64 +100,112 @@ const toggleMenu = () => {
 
 
 
-const formatDate = (date: string | number | Date | null | undefined): string => {
-  if (!date) return "";
-  const d = new Date(date);
-  const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
-  return d.toLocaleDateString("es-ES", options);
+const formatDate = (
+  date: string | number | Date | null | undefined
+): string => {
+  const d = parseAsLocalDate(date);
+
+  if (!d) return "";
+
+  return d.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
-const getTimeUntilBooking = (date: string | number | Date | null | undefined): string => {
-  if (!date) return "";
-  
-  const bookingDate = new Date(date);
+
+const parseAsLocalDate = (
+  date: string | number | Date | null | undefined
+): Date | null => {
+  if (!date) return null;
+
+  const value = String(date);
+
+  // Si viene como ISO UTC: 2026-09-27T00:00:00.000Z
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
+  );
+
+  if (match) {
+    const [, year, month, day, hours, minutes, seconds = "0"] = match;
+
+    return new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hours),
+      Number(minutes),
+      Number(seconds)
+    );
+  }
+
+  return new Date(date);
+};
+
+
+const getTimeUntilBooking = (
+  date: string | number | Date | null | undefined
+): string => {
+  const bookingDate = parseAsLocalDate(date);
+
+  if (!bookingDate) return "";
+
   const today = new Date();
-  
-  // Normalizar las fechas a medianoche para comparación
-  today.setHours(0, 0, 0, 0);
-  bookingDate.setHours(0, 0, 0, 0);
-  
-  const diffMs = bookingDate.getTime() - today.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  
-  if (diffDays < 0) {
-    return "Pasado";
-  }
-  
-  if (diffDays === 0) {
-    return "Hoy";
-  }
-  
-  if (diffDays === 1) {
-    return "Mañana";
-  }
-  
+
+  // Comparar únicamente las fechas locales
+  const bookingDay = new Date(
+    bookingDate.getFullYear(),
+    bookingDate.getMonth(),
+    bookingDate.getDate()
+  );
+
+  const todayDay = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  const diffDays = Math.round(
+    (bookingDay.getTime() - todayDay.getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays < 0) return "Pasado";
+  if (diffDays === 0) return "Hoy";
+  if (diffDays === 1) return "Mañana";
+
   if (diffDays < 7) {
     return `En ${diffDays} días`;
   }
-  
+
   const weeks = Math.floor(diffDays / 7);
   const remainingDays = diffDays % 7;
-  
+
   if (weeks === 1 && remainingDays === 0) {
     return "En 1 semana";
   }
-  
+
   if (weeks < 4) {
     if (remainingDays === 0) {
       return `En ${weeks} semanas`;
     }
-    return `En ${weeks} semanas y ${remainingDays} día${remainingDays > 1 ? 's' : ''}`;
+
+    return `En ${weeks} semanas y ${remainingDays} día${
+      remainingDays > 1 ? "s" : ""
+    }`;
   }
-  
+
   const months = Math.floor(diffDays / 30);
   const remainingAfterMonths = diffDays % 30;
-  
+
   if (remainingAfterMonths === 0) {
-    return `En ${months} mes${months > 1 ? 'es' : ''}`;
+    return `En ${months} mes${months > 1 ? "es" : ""}`;
   }
-  
-  return `En ${months} mes${months > 1 ? 'es' : ''} y ${remainingAfterMonths} día${remainingAfterMonths > 1 ? 's' : ''}`;
+
+  return `En ${months} mes${months > 1 ? "es" : ""} y ${
+    remainingAfterMonths > 1 ? "días" : "día"
+  }`;
 };
 
 const menuItems = [

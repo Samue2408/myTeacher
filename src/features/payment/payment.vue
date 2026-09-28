@@ -73,6 +73,10 @@ const pay = async () => {
     const created = await BookingsService.createBooking(bookingPayload);
     if (!created?._id) throw new Error();
 
+    if (Number(draft.value.discount) > 0) {
+      await userStore.adjustBalance(userStore.currentUser?._id, -Number(draft.value.discount));
+    }
+
     await refreshBookings();
     localStorage.removeItem('bookingDraft');
     success.value = true;

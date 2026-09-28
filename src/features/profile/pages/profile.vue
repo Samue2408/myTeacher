@@ -36,7 +36,8 @@
         <section v-if="activeTab === 'Resumen'" class="section"><Dashboard /></section>
         <section v-else-if="activeTab === 'Materias a Impartir'" class="section"><Subjects :tutor-id="currentUser._id" /></section>
         <section v-else-if="activeTab === 'Disponibilidad'" class="section"><Availability /></section>
-        <section v-else class="section"><BookingsHistory /></section>
+        <section v-else-if="activeTab === 'Reservas'" class="section"><BookingsHistory /></section>
+        <section v-else class="section tutor-balance"><p class="eyebrow">Finanzas</p><h2>Mi balance</h2><strong>{{ formatCurrency(currentUser.balance) }}</strong><p>Ganancias acumuladas de tus clases completadas.</p></section>
       </template>
     </main>
   </div>
@@ -58,7 +59,7 @@ import BookingsHistory from "@/components/profile/bookings/BookingsHistory.vue";
 import EditProfileModal from "@/components/profile/editProfileModal.vue";
 const router = useRouter(), auth = useAuthStore(), usersStore = useUserStore(), bookingsStore = useBookingsStore();
 const { currentUser } = storeToRefs(usersStore); const { studentBookings, isLoadingStudent: studentLoading } = storeToRefs(bookingsStore);
-const activeTab = ref('Resumen'), showEditProfile = ref(false); const tutorTabs = ['Resumen','Materias a Impartir','Disponibilidad','Reservas'];
+const activeTab = ref('Resumen'), showEditProfile = ref(false); const tutorTabs = ['Resumen','Materias a Impartir','Disponibilidad','Reservas','Balance'];
 const isStudent = computed(() => String(currentUser.value?.role || '').toLocaleLowerCase() === 'estudiante'); const initial = computed(() => currentUser.value?.name?.[0]?.toUpperCase() || 'U'); const firstName = computed(() => currentUser.value?.name?.split(' ')[0] || '');
 const locationLabel = computed(() => { const location = currentUser.value?.location; return [location?.city, location?.country].filter(Boolean).join(', ') || 'No registrada'; });
 const acceptedBookings = computed(() => studentBookings.value.filter(b => b.status === 'Aceptada' || b.status === 'Completada').length); const pendingBookings = computed(() => studentBookings.value.filter(b => b.status === 'Pendiente').length); const upcomingBookings = computed(() => [...studentBookings.value].filter(b => b.status !== 'Cancelada').sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0,4));

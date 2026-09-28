@@ -42,5 +42,10 @@ export const useDashboardStore = defineStore('dashboard', {
       this.loadedTutorId = null;
       await this.fetchById(tutorId);
     },
+
+    clearUser() {
+      this.dashboard = null;
+      this.loadedTutorId = null;
+    },
   },
 });

@@ -2,8 +2,8 @@ import { defineStore } from "pinia";
 import { BookingsService } from "@/api/bookings.service";
 import { useErrorHandler, useSuccessHandler } from '@/composables/useAlertsHandler';
 import { useDashboardStore } from "@/stores/dashboardStore";
+import { useUserStore } from "@/stores/userStore";
 import { BookingsType } from "@/types/bookings";
-import { UsersService } from "@/api/user.service";
 
 export const useBookingsStore = defineStore('bookings', {
     state: () => ({
@@ -94,7 +94,7 @@ export const useBookingsStore = defineStore('bookings', {
                     this.tutorBookings[index].status = 'Cancelada';
                     await useDashboardStore().refreshDashboardsByTutor(this.tutorBookings[index].tutorId);
                 }
-                await UsersService.update(booking.student._id, { balance: booking.price })
+                await useUserStore().adjustBalance(booking.student._id, Number(booking.price || 0) + Number(booking.discount || 0));
                 handleSuccess('Reserva rechazada');
             } catch (error) {
                 handleError(error);
@@ -108,11 +108,15 @@ export const useBookingsStore = defineStore('bookings', {
             const { handleSuccess } = useSuccessHandler();
             this.isLoading = true;
             try {
+                const booking = this.tutorBookings.find(item => item._id === bookingId);
                 await BookingsService.update(bookingId, { status: 'Completada' });
                 const index = this.tutorBookings.findIndex(b => b._id === bookingId);
                 if (index !== -1) {
                     this.tutorBookings[index].status = 'Completada';
                     await useDashboardStore().refreshDashboardsByTutor(this.tutorBookings[index].tutorId);
+                }
+                if (booking) {
+                    await useUserStore().adjustBalance(booking.tutorId, Number(booking.price || 0) + Number(booking.discount || 0));
                 }
                 handleSuccess('La clase se marcó como completada.');
             } catch (error) {

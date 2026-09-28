@@ -50,7 +50,7 @@
           </div>
 
           <footer class="reserva-footer">
-            <strong class="price">{{ formatCurrency(booking.price) }}</strong>
+            <strong class="price">{{ formatCurrency(booking.totalAmount) }}</strong>
             <div>
               <button v-if="(booking.status == 'Pendiente por pago' && env == 'production')" class="clear-filters" @click="handlePayment(booking._id)">Pagar</button>
               <button  class="details-button" type="button" @click="selectedBooking = booking">Ver detalles</button>
@@ -82,7 +82,8 @@
           <div><dt>Horario</dt><dd>{{ selectedBooking.startTime }} - {{ selectedBooking.endTime }}</dd></div>
           <div><dt>Modalidad</dt><dd>{{ selectedBooking.type }}</dd></div>
           <div><dt>Ubicación</dt><dd>{{ selectedBooking.location || 'Por confirmar' }}</dd></div>
-          <div><dt>Valor de la clase</dt><dd>{{ formatCurrency(selectedBooking.price) }}</dd></div>
+          <div><dt>Valor de la clase</dt><dd>{{ formatCurrency(selectedBooking.totalAmount) }}</dd></div>
+          <div><dt>Descuento</dt><dd>{{ formatCurrency(selectedBooking.discount) }}</dd></div>
           <div><dt>Reseñas</dt><dd>{{ selectedBooking.reviewsCount || 0 }}</dd></div>
         </dl>
 
