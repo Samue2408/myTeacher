@@ -2,7 +2,7 @@ import type { RouteRecordRaw } from "vue-router";
 
 const payment: RouteRecordRaw[] = [
   {
-    path: "mercado-pago/:bookingId",
+    path: "mercado-pago/:bookingId/:preferenceId",
     component: () => import("@/features/payment/mercadoPago.vue"),
     props: true
   },

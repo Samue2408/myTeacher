@@ -1,115 +1,72 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref } from "vue";
+import axios from "axios";
 import inputDefault from "@/shared/components/input.vue";
-import ComboBox from "@/shared/components/comboBox.vue";
-import type { SignUpPayload, AuthResponse } from "@/types/auth";
+import type { SignUpPayload, AuthResponse, CustomEmailPayload } from "@/types/auth";
 import { useRouter } from "vue-router";
 import authService from "@/api/auth.service";
+import emailService from "@/api/email.service";
+import { generateTemporaryPassword } from "@/utils/password";
 import { useToast } from "@/composables/useToast";
+import ComboBox from "@/shared/components/comboBox.vue";
 
 const router = useRouter();
 
-const form = ref<SignUpPayload>({
+const form = ref<Omit<SignUpPayload, "password">>({
   name: "",
   email: "",
-  password: "",
   role: "",
   phone: "",
-  location: null,
 });
 
-const confirmPassword = ref("");
 const loading = ref(false);
 const errorMsg = ref<string | null>(null);
 const successMsg = ref<string | null>(null);
+const accountCreated = ref(false);
+const pendingWelcomeEmail = ref<CustomEmailPayload | null>(null);
 
 const { show, message, type, triggerToast } = useToast();
-
-const passwordStrength = ref<"Débil" | "Media" | "Fuerte" | "Muy débil">(
-  "Muy débil"
-);
-const strengthColor = ref("#d33");
 
 const roles = [
   { label: "Tutor", value: "Tutor" },
   { label: "Estudiante", value: "Estudiante" },
 ];
 
-async function validatePassword(password: string): Promise<void> {
-  const cases = [
-    { regex: /.{8,}/, msg: "Debe tener al menos 8 caracteres" },
-    { regex: /[A-Z]/, msg: "Debe incluir al menos una letra mayúscula" },
-    { regex: /[a-z]/, msg: "Debe incluir al menos una letra minúscula" },
-    { regex: /[0-9]/, msg: "Debe incluir al menos un número" },
-    {
-      regex: /[!@#$%^&*(),.?\":{}|<>_\-]/,
-      msg: "Debe incluir al menos un carácter especial",
-    },
-  ];
-
-  const failed = cases.filter((c) => !c.regex.test(password));
-  if (failed.length > 0) {
-    const messages = failed.map((f) => f.msg).join(", ");
-    throw new Error(`Contraseña inválida: ${messages}.`);
-  }
+function createWelcomeEmail(email: string, temporaryPassword: string): CustomEmailPayload {
+  return {
+    to: email,
+    subject: "Tu contraseña temporal de MyTeacher",
+    previewText: "Tu cuenta ya está lista. Usa la contraseña temporal para iniciar sesión.",
+    title: "¡Bienvenido a MyTeacher!",
+    message: `Tu cuenta fue creada con éxito. Tu contraseña temporal es: ${temporaryPassword}. Inicia sesión con ella y actualízala desde tu perfil. Por seguridad, no compartas este correo.`,
+    buttonText: "Iniciar sesión",
+    buttonLink: `${window.location.origin}/user/login`,
+  };
 }
 
-watch(
-  () => form.value.password,
-  (password) => {
-    if (!password) {
-      passwordStrength.value = "Muy débil";
-      strengthColor.value = "#d33";
-      return;
-    }
+async function sendWelcomeEmail(): Promise<boolean> {
+  if (!pendingWelcomeEmail.value) return false;
 
-    let score = 0;
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[a-z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[!@#$%^&*(),.?\":{}|<>_\-]/.test(password)) score++;
-
-    switch (score) {
-      case 1:
-      case 2:
-        passwordStrength.value = "Débil";
-        strengthColor.value = "#ff6b6b";
-        break;
-      case 3:
-      case 4:
-        passwordStrength.value = "Media";
-        strengthColor.value = "#f7b500";
-        break;
-      case 5:
-        passwordStrength.value = "Fuerte";
-        strengthColor.value = "#28a745";
-        break;
-      default:
-        passwordStrength.value = "Muy débil";
-        strengthColor.value = "#d33";
-    }
+  try {
+    await emailService.sendCustom(pendingWelcomeEmail.value);
+    pendingWelcomeEmail.value = null;
+    errorMsg.value = null;
+    successMsg.value = "Cuenta creada. Revisa tu correo para obtener tu contraseña temporal.";
+    triggerToast("Cuenta creada; revisa tu correo", "success");
+    setTimeout(() => router.push("/user/login"), 2500);
+    return true;
+  } catch {
+    errorMsg.value = "Tu cuenta sí fue creada, pero no pudimos enviar el correo. Reintenta el envío.";
+    return false;
   }
-);
+}
 
 async function handleRegister() {
   errorMsg.value = null;
   successMsg.value = null;
 
-  if (form.value.password !== confirmPassword.value) {
-    errorMsg.value = "Las contraseñas no coinciden";
-    return;
-  }
-
-  if (!form.value.email || !form.value.name || !form.value.password) {
+  if (!form.value.email || !form.value.name) {
     errorMsg.value = "Por favor, completa todos los campos requeridos";
-    return;
-  }
-
-  try {
-    await validatePassword(form.value.password);
-  } catch (err: any) {
-    errorMsg.value = err.message;
     return;
   }
 
@@ -123,16 +80,37 @@ async function handleRegister() {
       country: loc.country_name,
     };
 
-    const response: AuthResponse = await authService.signUp(form.value);
+    const temporaryPassword = generateTemporaryPassword();
+    console.log("Contraseña temporal generada:", temporaryPassword);
+    const response: AuthResponse = await authService.signUp({
+      ...form.value,
+      password: temporaryPassword,
+    });
 
     if (response.user) {
-      triggerToast("Inicio de sesión exitoso", "success");
-      successMsg.value = "Cuenta creada exitosamente";
-      setTimeout(() => router.push("/user/login"), 1500);
+      accountCreated.value = true;
+      pendingWelcomeEmail.value = createWelcomeEmail(form.value.email, temporaryPassword);
+      await sendWelcomeEmail();
+    } else {
+      errorMsg.value = "No se pudo confirmar la creación de la cuenta.";
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Error en registro:", err);
-    errorMsg.value = err.response?.data?.message || "Error al registrarse";
+    errorMsg.value = axios.isAxiosError<{ message?: string }>(err)
+      ? err.response?.data?.message || "Error al registrarse"
+      : err instanceof Error
+        ? err.message
+        : "Error al registrarse";
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function retryWelcomeEmail() {
+  errorMsg.value = null;
+  loading.value = true;
+  try {
+    await sendWelcomeEmail();
   } finally {
     loading.value = false;
   }
@@ -146,7 +124,7 @@ async function handleRegister() {
         <header class="form-header">
           <h1 class="form--title">Registrarse</h1>
           <span class="form--description">
-            Ingrese sus datos a continuación para crear su cuenta y comenzar.
+            Ingresa tus datos para crear tu cuenta. Te enviaremos una contraseña temporal a tu correo.
           </span>
         </header>
 
@@ -156,23 +134,23 @@ async function handleRegister() {
             placeholder="Ingresa tu nombre completo"
             icon="person"
           />
-          <inputDefault
-            v-model="form.email"
-            placeholder="Ingresa tu correo"
-            type="email"
-            icon="email"
-          />
-        </div>
-
-        <div class="form-row">
           <div class="combo-box">
-            <label>Selecciona tu rol</label>
             <comboBox
               v-model="form.role"
               :items="roles"
               placeholder="Selecciona tu rol"
             />
           </div>
+          
+        </div>
+
+        <div class="form-row">
+          <inputDefault
+            v-model="form.email"
+            placeholder="Ingresa tu correo"
+            type="email"
+            icon="email"
+          />
         </div>
 
         <div class="form-row">
@@ -184,34 +162,22 @@ async function handleRegister() {
           />
         </div>
 
-        <div class="form-row">
-          <inputDefault
-            v-model="form.password"
-            placeholder="Ingresa tu contraseña"
-            type="password"
-            icon="lock"
-          />
-          <inputDefault
-            v-model="confirmPassword"
-            placeholder="Confirma tu contraseña"
-            type="password"
-            icon="lock"
-          />
-        </div>
-
-        <div class="password-strength" v-if="form.password.length > 0">
-          Fortaleza de contraseña:
-          <strong :style="{ color: strengthColor }">{{
-            passwordStrength
-          }}</strong>
-        </div>
-
         <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
         <div v-if="successMsg" class="success-msg">{{ successMsg }}</div>
 
+        <button
+          v-if="pendingWelcomeEmail && errorMsg"
+          type="button"
+          class="retry-email-btn"
+          :disabled="loading"
+          @click="retryWelcomeEmail"
+        >
+          {{ loading ? "Enviando..." : "Reintentar envío del correo" }}
+        </button>
+
         <div class="form-actions">
-          <button type="submit" class="confirm-btn" :disabled="loading">
-            <span v-if="!loading">Crear cuenta</span>
+          <button type="submit" class="confirm-btn" :disabled="loading || accountCreated || !!pendingWelcomeEmail">
+            <span v-if="!loading">{{ accountCreated ? "Cuenta creada" : "Crear cuenta" }}</span>
             <span v-else class="loader"></span>
           </button>
         </div>
@@ -238,13 +204,6 @@ async function handleRegister() {
   color: #28a745;
   font-size: 14px;
   text-align: center;
-}
-
-.password-strength {
-  font-size: 13px;
-  text-align: center;
-  margin-top: -10px;
-  color: #555;
 }
 
 .register {
@@ -334,6 +293,21 @@ async function handleRegister() {
 
 .confirm-btn:hover {
   background-color: var(--color-primary-dark);
+}
+
+.retry-email-btn {
+  padding: 10px;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  background: white;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.retry-email-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .redirect-login {

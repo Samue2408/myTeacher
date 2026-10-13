@@ -11,11 +11,12 @@
       <div class="info">
         <div class="info-item"><span class="material-icons-outlined">mail</span><div><label>Correo</label><p>{{ currentUser.email }}</p></div></div>
         <div v-if="currentUser.phone" class="info-item"><span class="material-icons-outlined">phone</span><div><label>Teléfono</label><p>{{ currentUser.phone }}</p></div></div>
-        <div v-if="isStudent && currentUser.location" class="info-item"><span class="material-icons-outlined">location_on</span><div><label>Ubicación</label><p>{{ locationLabel }}</p></div></div>
+        <div class="info-item"><span class="material-icons-outlined">location_on</span><div><label>Ubicación</label><p>{{ locationLabel }}</p></div></div>
         <div v-if="!isStudent && currentUser.reputation" class="rating"><label>Popularidad</label><RatingStars :rating="currentUser.reputation.rating || 0" /></div>
       </div>
 
       <button class="outline" @click="showEditProfile = true"><span class="material-icons-outlined">edit</span> Editar perfil</button>
+      <button class="outline" @click="showChangePassword = true"><span class="material-icons-outlined">lock</span> Cambiar contraseña</button>
       <button class="logout outline" @click="handleLogout"><span class="material-icons-outlined">logout</span> Cerrar sesión</button>
     </aside>
 
@@ -42,6 +43,7 @@
     </main>
   </div>
   <EditProfileModal v-if="showEditProfile" @close="showEditProfile = false" />
+  <ChangePasswordModal v-if="showChangePassword" @close="showChangePassword = false" />
 </template>
 
 <script setup>
@@ -57,9 +59,10 @@ import Dashboard from "@/components/profile/dashboard/dashboard.vue";
 import RatingStars from "@/shared/components/RatingStars.vue";
 import BookingsHistory from "@/components/profile/bookings/BookingsHistory.vue";
 import EditProfileModal from "@/components/profile/editProfileModal.vue";
+import ChangePasswordModal from "@/components/profile/changePasswordModal.vue";
 const router = useRouter(), auth = useAuthStore(), usersStore = useUserStore(), bookingsStore = useBookingsStore();
 const { currentUser } = storeToRefs(usersStore); const { studentBookings, isLoadingStudent: studentLoading } = storeToRefs(bookingsStore);
-const activeTab = ref('Resumen'), showEditProfile = ref(false); const tutorTabs = ['Resumen','Materias a Impartir','Disponibilidad','Reservas','Balance'];
+const activeTab = ref('Resumen'), showEditProfile = ref(false), showChangePassword = ref(false); const tutorTabs = ['Resumen','Materias a Impartir','Disponibilidad','Reservas','Balance'];
 const isStudent = computed(() => String(currentUser.value?.role || '').toLocaleLowerCase() === 'estudiante'); const initial = computed(() => currentUser.value?.name?.[0]?.toUpperCase() || 'U'); const firstName = computed(() => currentUser.value?.name?.split(' ')[0] || '');
 const locationLabel = computed(() => { const location = currentUser.value?.location; return [location?.city, location?.country].filter(Boolean).join(', ') || 'No registrada'; });
 const acceptedBookings = computed(() => studentBookings.value.filter(b => b.status === 'Aceptada' || b.status === 'Completada').length); const pendingBookings = computed(() => studentBookings.value.filter(b => b.status === 'Pendiente').length); const upcomingBookings = computed(() => [...studentBookings.value].filter(b => b.status !== 'Cancelada').sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0,4));

@@ -52,7 +52,7 @@
           <footer class="reserva-footer">
             <strong class="price">{{ formatCurrency(booking.totalAmount) }}</strong>
             <div>
-              <button v-if="(booking.status == 'Pendiente por pago' && env == 'production')" class="clear-filters" @click="handlePayment(booking._id)">Pagar</button>
+              <button v-if="(booking.status == 'Pendiente por pago' && env == 'production')" class="clear-filters" @click="handlePayment(booking)">Pagar</button>
               <button  class="details-button" type="button" @click="selectedBooking = booking">Ver detalles</button>
             </div>
           </footer>
@@ -87,6 +87,36 @@
           <div><dt>Reseñas</dt><dd>{{ selectedBooking.reviewsCount || 0 }}</dd></div>
         </dl>
 
+        <section v-if="canManageBooking" class="booking-management" aria-label="Gestionar clase">
+          <div class="booking-management-actions">
+            <button type="button" class="booking-cancel" :disabled="isSavingBooking" @click="cancelSelectedBooking">
+              <span class="material-icons-outlined">event_busy</span> Cancelar clase
+            </button>
+            <button type="button" class="booking-reschedule" :disabled="isSavingBooking" @click="openReschedule">
+              <span class="material-icons-outlined">edit_calendar</span> Reprogramar
+            </button>
+          </div>
+
+          <form v-if="isRescheduling" class="reschedule-form" @submit.prevent="submitReschedule">
+            <label for="reschedule-date">Nueva fecha</label>
+            <input id="reschedule-date" v-model="rescheduleDate" type="date" :min="minimumDate" :disabled="isSavingBooking" @change="loadRescheduleAvailability" />
+            <div v-if="isLoadingSchedule" class="availability-loading"><span class="spinner" /> Consultando horarios...</div>
+            <label v-else-if="rescheduleDate && availableStartTimes.length" for="reschedule-time">Hora de inicio</label>
+            <select v-if="rescheduleDate && availableStartTimes.length" id="reschedule-time" v-model="rescheduleStartTime" :disabled="isSavingBooking">
+              <option value="" disabled>Selecciona una hora</option>
+              <option v-for="time in availableStartTimes" :key="time" :value="time">{{ time }} - {{ endTimeFor(time) }}</option>
+            </select>
+            <p v-else-if="rescheduleDate && !isLoadingSchedule && !scheduleError" class="schedule-empty">No hay horarios disponibles para esa fecha y duración.</p>
+            <p v-if="scheduleError" class="booking-action-error" role="alert">{{ scheduleError }}</p>
+            <div class="reschedule-actions">
+              <button type="button" class="review-secondary" :disabled="isSavingBooking" @click="isRescheduling = false">Volver</button>
+              <button type="submit" class="review-submit" :disabled="isSavingBooking || !rescheduleStartTime">
+                {{ isSavingBooking ? 'Guardando...' : 'Enviar al profesor' }}
+              </button>
+            </div>
+          </form>
+        </section>
+
         <section v-if="canManageReview" class="review-section" aria-labelledby="review-title">
           <div class="review-heading"><p class="eyebrow">Tu experiencia</p><h3 id="review-title">Reseña de la clase</h3></div>
           <div v-if="isReviewLoading" class="review-loading" aria-live="polite"><span class="spinner" /> Cargando reseña...</div>
@@ -120,6 +150,7 @@ import ReviewDetails from "@/shared/components/ReviewDetails.vue";
 import { useBookingsStore } from "@/stores/bookingsStore";
 import { useReviewsStore } from "@/stores/reviewsStore";
 import { useUserStore } from "@/stores/userStore";
+import { AvailabilityService } from "@/api/availability.service";
 import type { BookingsType } from "@/types/bookings";
 import { useRouter } from "vue-router";
 
@@ -133,6 +164,14 @@ const { currentReview, isLoading: isReviewLoading, isSaving: isReviewSaving } = 
 const statusFilter = ref("");
 const tutorFilter = ref("");
 const selectedBooking = ref<BookingsType | null>(null);
+const isSavingBooking = ref(false);
+const isRescheduling = ref(false);
+const isLoadingSchedule = ref(false);
+const rescheduleDate = ref("");
+const rescheduleStartTime = ref("");
+const availableSlots = ref<Array<{ startTime: string; endTime: string }>>([]);
+const scheduleError = ref("");
+let availabilityRequestId = 0;
 const isEditingReview = ref(false);
 const reviewError = ref("");
 const reviewForm = ref({ rating: 0, comments: "" });
@@ -163,11 +202,11 @@ const filteredBookings = computed(() => bookings.value.filter((booking) =>
 ));
 const env = import.meta.env.VITE_ENV;
 
-const handlePayment = (id: string) => {
+const handlePayment = (booking: BookingsType) => {
   if(env == "development") {
     router.push('/payment')
   } else {
-    router.push(`/payment/mercado-pago/${id}`)
+    router.push(`/payment/mercado-pago/${booking._id}/${booking.preferenceId}`)
   }
 }
 
@@ -176,6 +215,43 @@ const clearFilters = () => { statusFilter.value = ""; tutorFilter.value = ""; };
 const isStudent = computed(() => ["estudiante", "student"].includes(String(currentUser.value?.role || "").toLocaleLowerCase()));
 const isCompletedBooking = (booking: BookingsType) => booking.status.toLocaleLowerCase("es-CO") === "completada";
 const canManageReview = computed(() => Boolean(selectedBooking.value && isStudent.value && isCompletedBooking(selectedBooking.value)));
+const isUpcomingBooking = (booking: BookingsType) => new Date(`${booking.date.slice(0, 10)}T${booking.endTime}:00`).getTime() > Date.now();
+const canManageBooking = computed(() => Boolean(selectedBooking.value && isStudent.value && selectedBooking.value.status === "Aceptada" && isUpcomingBooking(selectedBooking.value)));
+const minimumDate = computed(() => {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+});
+const bookingDurationMinutes = computed(() => {
+  if (!selectedBooking.value) return 0;
+  const toMinutes = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+  return toMinutes(selectedBooking.value.endTime) - toMinutes(selectedBooking.value.startTime);
+});
+const availableStartTimes = computed(() => {
+  const times = new Set<string>();
+  const now = new Date();
+  const today = minimumDate.value;
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  for (const slot of availableSlots.value) {
+    const [startHour, startMinute] = slot.startTime.split(":").map(Number);
+    const [endHour, endMinute] = slot.endTime.split(":").map(Number);
+    const slotStart = startHour * 60 + startMinute;
+    const slotEnd = endHour * 60 + endMinute;
+    let start = Math.ceil(slotStart / 60) * 60;
+
+    while (start + bookingDurationMinutes.value <= slotEnd) {
+      if (rescheduleDate.value !== today || start > currentMinutes) {
+        times.add(`${String(Math.floor(start / 60)).padStart(2, "0")}:${String(start % 60).padStart(2, "0")}`);
+      }
+      start += 60;
+    }
+  }
+
+  return [...times].sort();
+});
 
 const formatDate = (date: string) => new Intl.DateTimeFormat("es-CO", {
   weekday: "long", day: "numeric", month: "long", year: "numeric",
@@ -187,8 +263,77 @@ const formatCurrency = (amount: number) => new Intl.NumberFormat("es-CO", {
 
 const statusClass = (status: string) => `status-${status.toLocaleLowerCase("es-CO").normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`;
 
+const endTimeFor = (startTime: string) => {
+  const [hours, minutes] = startTime.split(":").map(Number);
+  const end = hours * 60 + minutes + bookingDurationMinutes.value;
+  return `${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
+};
+
+const resetBookingActions = () => {
+  availabilityRequestId++;
+  isRescheduling.value = false;
+  isLoadingSchedule.value = false;
+  rescheduleDate.value = "";
+  rescheduleStartTime.value = "";
+  availableSlots.value = [];
+  scheduleError.value = "";
+};
+
+const openReschedule = () => {
+  resetBookingActions();
+  isRescheduling.value = true;
+};
+
+const loadRescheduleAvailability = async () => {
+  const requestId = ++availabilityRequestId;
+  const date = rescheduleDate.value;
+  rescheduleStartTime.value = "";
+  availableSlots.value = [];
+  scheduleError.value = "";
+  if (!selectedBooking.value || !date) return;
+
+  isLoadingSchedule.value = true;
+  try {
+    const response = await AvailabilityService.getAvailabilitiesByDate(selectedBooking.value.tutorId, date);
+    if (requestId === availabilityRequestId && date === rescheduleDate.value) {
+      availableSlots.value = response.availableSlots || [];
+    }
+  } catch (error) {
+    if (requestId === availabilityRequestId) {
+      scheduleError.value = error instanceof Error ? error.message : "No fue posible consultar los horarios.";
+    }
+  } finally {
+    if (requestId === availabilityRequestId) isLoadingSchedule.value = false;
+  }
+};
+
+const cancelSelectedBooking = async () => {
+  const booking = selectedBooking.value;
+  if (!booking || !window.confirm("¿Seguro que deseas cancelar esta clase? Esta acción no modifica el saldo.")) return;
+
+  isSavingBooking.value = true;
+  const cancelled = await bookingsStore.cancelBookingByStudent(booking);
+  isSavingBooking.value = false;
+  if (cancelled) closeDetails();
+};
+
+const submitReschedule = async () => {
+  const booking = selectedBooking.value;
+  if (!booking || !rescheduleDate.value || !rescheduleStartTime.value || !availableStartTimes.value.includes(rescheduleStartTime.value)) return;
+
+  isSavingBooking.value = true;
+  const saved = await bookingsStore.rescheduleBookingByStudent(
+    booking,
+    rescheduleDate.value,
+    rescheduleStartTime.value,
+    endTimeFor(rescheduleStartTime.value),
+  );
+  isSavingBooking.value = false;
+  if (saved) closeDetails();
+};
+
 const resetReviewForm = () => { reviewForm.value = { rating: 0, comments: "" }; reviewError.value = ""; isEditingReview.value = false; };
-const closeDetails = () => { selectedBooking.value = null; reviewsStore.clearCurrentReview(); resetReviewForm(); };
+const closeDetails = () => { selectedBooking.value = null; reviewsStore.clearCurrentReview(); resetReviewForm(); resetBookingActions(); };
 const startEditReview = () => {
   if (!currentReview.value) return;
   reviewForm.value = { rating: currentReview.value.rating, comments: currentReview.value.comments };
@@ -239,4 +384,19 @@ h1, h2, p { margin-top: 0; }.reservas-header h1 { margin-bottom: 6px; font-size:
 .modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(16, 24, 40, .52); overflow-y: auto; }.details-modal { position: relative; width: min(100%, 500px); max-height: calc(100vh - 40px); padding: 28px; border-radius: 16px; background: #fff; overflow-y: auto; }.details-modal h2 { margin-bottom: 12px; font-size: 23px; }.close-button { position: absolute; top: 14px; right: 14px; display: grid; padding: 4px; border: 0; background: transparent; color: #68758a; cursor: pointer; }.details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }.details-list div { padding: 10px 0; border-bottom: 1px solid #edf0f3; }.details-list dt { margin-bottom: 4px; color: #7b838f; font-size: 12px; }.details-list dd { margin: 0; color: #242933; font-size: 14px; font-weight: 600; }.join-button { display: block; text-align: center; }
 .review-section { margin: 24px 0; padding: 20px; border: 1px solid #dfe8e6; border-radius: 12px; background: #fbfefd; }.review-heading .eyebrow { margin-bottom: 3px; font-size: 11px; }.review-heading h3 { margin: 0; font-size: 17px; }.review-loading { display: flex; align-items: center; gap: 9px; min-height: 72px; color: #737b88; font-size: 13px; }.review-loading .spinner { width: 18px; height: 18px; border-width: 2px; }.review-rating { display: flex; align-items: center; gap: 3px; margin: 16px 0 10px; }.review-rating .material-icons-outlined, .star-picker .material-icons-outlined { color: #d4d9df; }.review-rating .active, .star-picker .active { color: #f5b301; }.review-rating strong { margin-left: 5px; color: #4a5360; font-size: 13px; }.review-comment { margin: 0; color: #3f4650; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }.review-form { margin-top: 14px; }.review-help { margin: 0 0 12px; color: #69707d; font-size: 13px; }.star-picker { display: flex; gap: 3px; margin-bottom: 14px; }.star-picker button { padding: 0; border: 0; background: transparent; font-size: 29px; cursor: pointer; }.star-picker button:hover { transform: scale(1.08); }.review-form label { display: block; margin-bottom: 6px; color: #505966; font-size: 13px; font-weight: 700; }.review-form textarea { box-sizing: border-box; width: 100%; min-height: 88px; padding: 10px; resize: vertical; border: 1px solid #d8dee7; border-radius: 8px; color: #303743; font: inherit; font-size: 13px; }.review-form textarea:focus { outline: 2px solid rgba(8, 178, 148, .2); border-color: var(--color-primary); }.review-error { margin: 8px 0 0; color: #c42b2b; font-size: 12px; }.review-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 14px; }.review-secondary, .review-delete, .review-submit { padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }.review-secondary { border: 1px solid #d8dee7; background: #fff; color: #4b5563; }.review-delete { border: 1px solid #f1c1c1; background: #fff; color: #c42b2b; }.review-submit { border: 0; background: var(--color-primary); color: #fff; }.review-actions button:disabled { cursor: wait; opacity: .65; }
 .fade-enter-active, .fade-leave-active { transition: all .2s ease; }.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(8px); }@keyframes spin { to { transform: rotate(360deg); } }@media (max-width: 600px) { .reservas-container { padding: 32px 16px; }.filters { flex-direction: column; max-width: none; }.reservas-header h1 { font-size: 27px; }.details-list { grid-template-columns: 1fr; gap: 0; }.details-modal { padding: 24px 18px; }.review-section { padding: 16px; } }
+.booking-management { margin: 0 0 20px; padding: 16px; border: 1px solid #e5e9ef; border-radius: 10px; background: #fbfcfd; }
+.booking-management-actions, .reschedule-actions { display: flex; justify-content: flex-end; gap: 9px; }
+.booking-management-actions button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid #d8dee7; border-radius: 7px; background: #fff; color: #3f4a58; font-size: 12px; font-weight: 700; cursor: pointer; }
+.booking-management-actions .booking-cancel { border-color: #f1c1c1; color: #c42b2b; }
+.booking-management-actions button:disabled { cursor: wait; opacity: .6; }
+.booking-management-actions .material-icons-outlined { font-size: 16px; }
+.reschedule-form { display: grid; gap: 8px; margin-top: 16px; }
+.reschedule-form label { color: #505966; font-size: 12px; font-weight: 700; }
+.reschedule-form input, .reschedule-form select { box-sizing: border-box; width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #d8dee7; border-radius: 7px; background: #fff; color: #303743; font: inherit; font-size: 13px; }
+.reschedule-actions { margin-top: 8px; }
+.availability-loading { display: flex; align-items: center; gap: 9px; color: #69707d; font-size: 12px; }
+.availability-loading .spinner { width: 18px; height: 18px; border-width: 2px; }
+.schedule-empty, .booking-action-error { margin: 2px 0; color: #69707d; font-size: 12px; }
+.booking-action-error { color: #c42b2b; }
+@media (max-width: 600px) { .booking-management-actions { flex-direction: column; }.booking-management-actions button { justify-content: center; } }
 </style>

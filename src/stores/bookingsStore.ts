@@ -103,6 +103,71 @@ export const useBookingsStore = defineStore('bookings', {
             }
         },
 
+        async cancelBookingByStudent(booking: BookingsType) {
+            const { handleError } = useErrorHandler();
+            const { handleSuccess } = useSuccessHandler();
+            try {
+                await BookingsService.update(booking._id, { status: 'Cancelada' });
+                const index = this.studentBookings.findIndex(item => item._id === booking._id);
+                if (index !== -1) this.studentBookings[index] = { ...this.studentBookings[index], status: 'Cancelada' };
+                handleSuccess('Clase cancelada');
+                return true;
+            } catch (error) {
+                handleError(error);
+                return false;
+            }
+        },
+
+        async cancelAcceptedBookingByTutor(booking: BookingsType) {
+            const { handleError } = useErrorHandler();
+            const { handleSuccess } = useSuccessHandler();
+            this.isLoading = true;
+            try {
+                await BookingsService.update(booking._id, { status: 'Cancelada' });
+                const index = this.tutorBookings.findIndex(item => item._id === booking._id);
+                if (index !== -1) {
+                    this.tutorBookings[index] = { ...this.tutorBookings[index], status: 'Cancelada' };
+                    await useDashboardStore().refreshDashboardsByTutor(booking.tutorId);
+                }
+                await useUserStore().adjustBalance(booking.student._id, Number(booking.price || 0) + Number(booking.discount || 0));
+                handleSuccess('Clase cancelada y saldo acreditado al estudiante');
+                return true;
+            } catch (error) {
+                handleError(error);
+                return false;
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async rescheduleBookingByStudent(booking: BookingsType, date: string, startTime: string, endTime: string) {
+            const { handleError } = useErrorHandler();
+            const { handleSuccess } = useSuccessHandler();
+            try {
+                await BookingsService.update(booking._id, {
+                    date,
+                    startTime,
+                    endTime,
+                    status: 'Pendiente por aceptar',
+                });
+                const index = this.studentBookings.findIndex(item => item._id === booking._id);
+                if (index !== -1) {
+                    this.studentBookings[index] = {
+                        ...this.studentBookings[index],
+                        date,
+                        startTime,
+                        endTime,
+                        status: 'Pendiente por aceptar',
+                    };
+                }
+                handleSuccess('Cambio de horario enviado al profesor');
+                return true;
+            } catch (error) {
+                handleError(error);
+                return false;
+            }
+        },
+
         async completeBooking(bookingId: string) {
             const { handleError } = useErrorHandler();
             const { handleSuccess } = useSuccessHandler();

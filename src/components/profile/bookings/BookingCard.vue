@@ -64,6 +64,7 @@
         </div>
         <div v-else class="booking-status">
           <span :class="`status ${$props.booking.status.toLowerCase()}`">{{ $props.booking.status }}</span>
+          <button v-if="canCancel" class="btn-cancel" @click="handleCancel" :disabled="isLoading">Cancelar clase</button>
           <button v-if="canComplete" class="btn-complete" @click="handleComplete" :disabled="isLoading">Marcar como completada</button>
         </div>
 
@@ -92,7 +93,7 @@ const $props = defineProps({
   },
 });
 
-const emit = defineEmits(["accept", "reject", "complete", "review"]);
+const emit = defineEmits(["accept", "reject", "complete", "cancel", "review"]);
 
 const showDetails = ref(false);
 
@@ -156,6 +157,7 @@ const isPastBooking = computed(() => {
   return bookingKey < nowKey;
 });
 const canComplete = computed(() => !$props.pending && $props.booking.status === 'Aceptada' && isPastBooking.value);
+const canCancel = computed(() => !$props.pending && $props.booking.status === 'Aceptada' && !isPastBooking.value);
 const canViewReview = computed(() => !$props.pending && $props.booking.status.toLocaleLowerCase("es-CO") === "completada");
 
 // Formatear fecha
@@ -195,6 +197,12 @@ const handleReject = () => {
 
 const handleComplete = () => {
   emit("complete", $props.booking);
+};
+
+const handleCancel = () => {
+  if (window.confirm("¿Cancelar esta clase? El valor se acreditará al saldo del estudiante.")) {
+    emit("cancel", $props.booking);
+  }
 };
 </script>
 
@@ -317,6 +325,10 @@ const handleComplete = () => {
   gap: 8px;
   align-items: center;
 }
+
+.btn-cancel { padding: 7px 9px; border: 1px solid #c42b2b; border-radius: 6px; background: #fff; color: #c42b2b; font-size: 11px; font-weight: 700; cursor: pointer; }
+.btn-cancel:hover:not(:disabled) { background: #fff0f0; }
+.btn-cancel:disabled { opacity: .6; cursor: not-allowed; }
 
 .btn-complete { padding: 7px 9px; border: 1px solid #1d7c50; border-radius: 6px; background: #fff; color: #1d7c50; font-size: 11px; font-weight: 700; cursor: pointer; }
 .btn-complete:hover:not(:disabled) { background: #eaf7ef; }

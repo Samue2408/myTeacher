@@ -99,21 +99,27 @@ const handlePayment = async () => {
       return;
     }
 
+    
     const { tutorName, subjectName, hourlyRate, durationHours, ...payload } = draft.value;
     const bookingPayload = {
       ...payload,
       ...(draft.value.type === 'Virtual' ? { videoCallLink: createJitsiLink() } : {}),
+      ...(Number(draft.value.price) == 0 ? { status: "Pendiente por aceptar"} : {})
     };
     const created = await BookingsService.createBooking(bookingPayload);
+    
     if (!created?._id) throw new Error('No se pudo crear la reserva.');
-
-    if (appliedDiscount.value > 0) {
-      await userStore.adjustBalance(userStore.currentUser?._id, -appliedDiscount.value);
-    }
-
+    
+    
+    
     await refreshBookings();
     localStorage.removeItem('bookingDraft');
-    router.push(`/payment/mercado-pago/${created._id}`);
+    if (Number(draft.value.price) == 0){
+      await userStore.adjustBalance(userStore.currentUser?._id, -Number(draft.value.discount));
+      router.push('/bookings');
+      return;
+    }
+    router.push(`/payment/mercado-pago/${created._id}/${created.preferenceId}`);
   } catch (paymentError) {
     error.value = paymentError?.message || 'No pudimos preparar el pago. Inténtalo nuevamente.';
   } finally {

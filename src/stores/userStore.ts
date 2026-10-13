@@ -8,7 +8,10 @@ interface User {
   role: string,
   phone?: string,
   balance?: number,
-  location?: Object,
+  location?: {
+    city: string,
+    country: string,
+  },
   reputation?: Object,
   validatedTeacher?: boolean
   image?: string

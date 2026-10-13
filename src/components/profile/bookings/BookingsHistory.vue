@@ -10,6 +10,7 @@
           :booking="booking"
           :isLoading="isLoading"
           @complete="handleComplete"
+          @cancel="handleCancel"
           @review="openReview"
         />
       </ul>
@@ -98,6 +99,10 @@ const handleReject = async (booking: any) => {
 
 const handleComplete = async (booking: any) => {
   await bookingsStore.completeBooking(booking._id);
+};
+
+const handleCancel = async (booking: BookingsType) => {
+  await bookingsStore.cancelAcceptedBookingByTutor(booking);
 };
 
 const openReview = async (booking: BookingsType) => {

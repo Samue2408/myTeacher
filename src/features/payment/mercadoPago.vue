@@ -37,6 +37,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  preferenceId: {
+    type: String,
+    required: false
+  }
 });
 
 const loading = ref(true);
@@ -49,6 +53,13 @@ const initBrick = async () => {
   hasError.value = false;
 
   try {
+    let id;
+
+    if (props.preferenceId == undefined || props.preferenceId == "") {
+      id = props.preferenceId
+    }
+
+    
     // 1. Trae la preferencia generada en tu backend
     const data = await MercadoPagoService.getPreference(props.bookingId);
 
@@ -64,7 +75,7 @@ const initBrick = async () => {
 
     const settings = {
       initialization: {
-        preferenceId: data.id, // El ID de preferencia generado en tu backend
+        preferenceId: (id ? id : data.id), // El ID de preferencia generado en tu backend
         redirectMode: 'self', // "self" para abrir en la misma pestaña o "modal"
       },
       callbacks: {

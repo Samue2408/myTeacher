@@ -24,6 +24,16 @@
           <InputDefault id="profile-phone" v-model="form.phone" type="tel" placeholder="Ingresa tu teléfono" icon="phone" :styles="inputStyle" />
         </div>
 
+        <div class="field">
+          <label for="profile-city">Ciudad</label>
+          <InputDefault id="profile-city" v-model="form.city" placeholder="Ingresa tu ciudad" icon="location_city" :styles="inputStyle" />
+        </div>
+
+        <div class="field">
+          <label for="profile-country">País</label>
+          <InputDefault id="profile-country" v-model="form.country" placeholder="Ingresa tu país" icon="public" :styles="inputStyle" />
+        </div>
+
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
         <div class="modal-actions">
@@ -52,6 +62,8 @@ const form = reactive({
   name: userStore.currentUser?.name || "",
   email: userStore.currentUser?.email || "",
   phone: userStore.currentUser?.phone || "",
+  city: userStore.currentUser?.location?.city || "",
+  country: userStore.currentUser?.location?.country || "",
 });
 
 const handleSubmit = async () => {
@@ -68,6 +80,10 @@ const handleSubmit = async () => {
       name: form.name.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
+      location: {
+        city: form.city.trim(),
+        country: form.country.trim(),
+      },
     });
     emit("saved");
     emit("close");

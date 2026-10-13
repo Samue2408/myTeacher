@@ -19,6 +19,22 @@ export interface SignUpPayload {
   location?: LocationData
 }
 
+export interface ChangePasswordPayload {
+    email: string
+    password: string
+    newPassword: string
+}
+
+export interface CustomEmailPayload {
+    to: string
+    subject: string
+    previewText: string
+    title: string
+    message: string
+    buttonText: string
+    buttonLink: string
+}
+
 
 
 
@@ -39,4 +55,7 @@ export interface AuthResponse {
     token: string
 }
 
-
+export interface ChangePasswordResponse {
+    message?: string
+    error?: string
+}

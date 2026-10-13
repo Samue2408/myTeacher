@@ -1,5 +1,5 @@
 // src/services/auth.service.ts
-import { AuthResponse, LoginCredentials, SignUpPayload } from "@/types/auth";
+import { AuthResponse, ChangePasswordPayload, ChangePasswordResponse, LoginCredentials, SignUpPayload } from "@/types/auth";
 import http from "./http";
 
 const prefix = '/users/auth';   
@@ -13,6 +13,11 @@ export class AuthService {
 
   async signUp(payload: SignUpPayload) {
     const { data } = await http.post<AuthResponse>(`${prefix}/register`, payload, { withCredentials: true });
+    return data;
+  }
+
+  async changePassword(payload: ChangePasswordPayload) {
+    const { data } = await http.put<ChangePasswordResponse>(`${prefix}/change-password`, payload, { withCredentials: true });
     return data;
   }
 }

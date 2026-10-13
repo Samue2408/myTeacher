@@ -68,7 +68,16 @@ const mensajeInicial = computed(() => {
 
 const booking = ref(null);
 const checking = ref(true);
-const isPaid = computed(() => booking.value && booking.value.status !== 'Pendiente por pago');
+const isPaid = computed(async () => {
+
+  const paid = booking.value && booking.value.status !== 'Pendiente por pago';
+
+  if (paid) {
+    await userStore.adjustBalance(userStore.currentUser?._id, -appliedDiscount.value);
+  }
+  return paid;
+
+});
 
 let pollTimer = null;
 let attempts = 0;
