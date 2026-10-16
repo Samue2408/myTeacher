@@ -32,6 +32,10 @@ const roles = [
   { label: "Estudiante", value: "Estudiante" },
 ];
 
+function handlePhoneInput(value: string) {
+  form.value.phone = value.replace(/\D/g, "");
+}
+
 function createWelcomeEmail(email: string, temporaryPassword: string): CustomEmailPayload {
   return {
     to: email,
@@ -67,6 +71,10 @@ async function handleRegister() {
 
   if (!form.value.email || !form.value.name) {
     errorMsg.value = "Por favor, completa todos los campos requeridos";
+    return;
+  }
+  if (form.value.phone && !/^\d+$/.test(form.value.phone)) {
+    errorMsg.value = "El teléfono solo puede contener números.";
     return;
   }
 
@@ -155,9 +163,11 @@ async function retryWelcomeEmail() {
 
         <div class="form-row">
           <inputDefault
-            v-model="form.phone"
+            :modelValue="form.phone ?? ''"
+            @update:modelValue="handlePhoneInput"
             placeholder="Número de teléfono"
-            type="tel"
+            type="number"
+            inputmode="numeric"
             icon="phone"
           />
         </div>

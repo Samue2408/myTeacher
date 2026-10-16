@@ -37,6 +37,7 @@ export interface Booking {
   endTime: string;       // "HH:mm"
   price: number;
   startDateTime: string; // ISO string
+  videoCallLink?: string;
   student: BookingStudent;
   subject: BookingSubject;
 }

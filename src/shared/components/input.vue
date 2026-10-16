@@ -5,8 +5,10 @@ import { defineProps } from "vue";
 const $props = defineProps<{
   modelValue: string;
   type?: string;
+  id?: string;
   placeholder?: string;
   icon?: string; 
+  inputmode?: string;
   disabled?: boolean;
   readonly?: boolean;
   styles?: string;
@@ -25,8 +27,10 @@ const onInput = (e: Event) => {
   <div class="input-wrapper" :class="$props.styles">
     <input
       :type="type || 'text'"
+      :id="id"
       :value="modelValue"
       :placeholder="placeholder"
+      :inputmode="inputmode"
       :disabled="disabled"
       :readonly="readonly"
       @input="onInput"

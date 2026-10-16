@@ -39,7 +39,7 @@
             :row="booking"
             :isOpen="isMenuOpen"
             :dividerIndex="null"
-            :itemRed="2"
+            :itemRed="null"
             @closed="isMenuOpen = false"
           />
         </div>
@@ -76,10 +76,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { Booking } from '@/types/dashboard'
 import type { PropType } from "vue";
 import MenuModal from "@/shared/components/MenuModal.vue";
+import { useUserStore } from "@/stores/userStore";
+import { useBookingsStore } from "@/stores/bookingsStore";
+import { useDashboardStore } from "@/stores/dashboardStore";
+import { useAppStore } from "@/stores/appStore";
+import { BookingsService } from "@/api/bookings.service";
+import type { BookingsType } from "@/types/bookings";
+import { sendMeetingJoinNotification } from "@/utils/meetingJoinNotification";
+import { isMeetingJoinAvailable, useMeetingClock } from "@/utils/meetingAvailability";
 
 const $props = defineProps({
   booking: {
@@ -93,10 +101,84 @@ const $props = defineProps({
 
 
 const isMenuOpen = ref(false);
+const userStore = useUserStore();
+const bookingsStore = useBookingsStore();
+const dashboardStore = useDashboardStore();
+const appStore = useAppStore();
+const meetingNow = useMeetingClock();
+const isMeetingJoinOpen = computed(() =>
+  Boolean(
+    $props.booking?.type === "Virtual" &&
+    isMeetingJoinAvailable($props.booking, new Date(meetingNow.value)),
+  ),
+);
+const menuItems = computed(() => [
+  ...(isMeetingJoinOpen.value
+    ? [{ label: "Ir al enlace", icon: "link", action: openMeeting }]
+    : []),
+  {
+    label: "Cancelar clase",
+    icon: "close",
+    class: "red",
+    action: cancelClass,
+  },
+]);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 };
+
+async function openMeeting(row: Booking) {
+  if (row.type !== "Virtual" || !isMeetingJoinAvailable(row)) {
+    appStore.setError("El enlace estará disponible desde 15 minutos antes del inicio y hasta que termine la clase.");
+    return;
+  }
+
+  const meetingWindow = window.open("about:blank", "_blank");
+  if (!meetingWindow) {
+    appStore.setError("Permite las ventanas emergentes para abrir la videollamada.");
+    return;
+  }
+
+  meetingWindow.opener = null;
+  try {
+    const booking = await BookingsService.getById(row._id) as BookingsType;
+    if (!booking.videoCallLink) {
+      throw new Error("No se encontró el enlace de videollamada para esta reserva.");
+    }
+    if (!isMeetingJoinAvailable(booking)) {
+      throw new Error("El enlace ya no está disponible porque la ventana de la clase terminó.");
+    }
+
+    meetingWindow.location.href = booking.videoCallLink;
+    void sendMeetingJoinNotification(booking, {
+      _id: userStore.currentUser?._id,
+      name: userStore.currentUser?.name,
+    }).catch((error: unknown) => {
+      console.error("No fue posible enviar el aviso de ingreso a la clase.", error);
+      appStore.setError("No pudimos avisar al estudiante por correo. El enlace de la reunión sigue disponible.");
+    });
+  } catch (error: unknown) {
+    meetingWindow.close();
+    console.error("No fue posible abrir la videollamada desde el dashboard.", error);
+    appStore.setError(error instanceof Error ? error.message : "No fue posible abrir el enlace de la clase.");
+  }
+}
+
+async function cancelClass(row: Booking) {
+  if (!window.confirm("¿Cancelar esta clase? El valor se acreditará al saldo del estudiante.")) return;
+
+  try {
+    const booking = await BookingsService.getById(row._id) as BookingsType;
+    const cancelled = await bookingsStore.cancelAcceptedBookingByTutor(booking);
+    if (cancelled) {
+      await dashboardStore.refreshDashboardsByTutor(userStore.currentUser?._id || booking.tutorId);
+    }
+  } catch (error: unknown) {
+    console.error("No fue posible cancelar la clase desde el dashboard.", error);
+    appStore.setError(error instanceof Error ? error.message : "No fue posible cancelar la clase.");
+  }
+}
 
 
 
@@ -208,30 +290,6 @@ const getTimeUntilBooking = (
   }`;
 };
 
-const menuItems = [
-  {
-    label: "Ir al enlace",
-    icon: "link",
-    action: (row: Booking) => {
-      console.log("Ir al enlace:", row);
-    },
-  },
-  {
-    label: "Ir a calendario",
-    icon: "schedule",
-    action: (row: Booking) => {
-      console.log("Ir al calendario:", row);
-    },
-  },
-  {
-    label: "Cancelar clase",
-    icon: "close",
-    class: "red",
-    action: (row: Booking) => {
-      console.log("Cancelar clase:", row);
-    },
-  },
-];
 </script>
 
 <style scoped>

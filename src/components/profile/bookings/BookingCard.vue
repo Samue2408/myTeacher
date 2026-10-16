@@ -50,7 +50,7 @@
                     <span class="material-icons-outlined">mode_comment</span>
                     <p>{{ $props.booking.reviewsCount }}</p>
                 </button>
-                <a v-if="$props.booking.type.toLowerCase() == 'virtual' && !$props.pending && $props.booking.videoCallLink" class="action video-link" :href="$props.booking.videoCallLink" target="_blank" rel="noopener" title="Unirse a la videollamada">                        
+                <a v-if="!$props.pending && $props.booking.videoCallLink" class="action video-link" :href="canJoinMeeting ? $props.booking.videoCallLink : '#'" target="_blank" rel="noopener" title="Unirse a la videollamada" @click="notifyMeetingJoin" :aria-disabled="!canJoinMeeting">
                     <span class="material-icons-outlined link">link</span>
             </a>
         </div>
@@ -77,6 +77,10 @@
 import { computed, ref } from "vue";
 import { BookingsType } from "@/types/bookings";
 import type {PropType} from "vue"
+import { useUserStore } from "@/stores/userStore";
+import { useAppStore } from "@/stores/appStore";
+import { sendMeetingJoinNotification } from "@/utils/meetingJoinNotification";
+import { isMeetingJoinAvailable, useMeetingClock } from "@/utils/meetingAvailability";
 
 const $props = defineProps({
   booking: {
@@ -94,8 +98,32 @@ const $props = defineProps({
 });
 
 const emit = defineEmits(["accept", "reject", "complete", "cancel", "review"]);
+const userStore = useUserStore();
+const appStore = useAppStore();
+const meetingNow = useMeetingClock();
+const canJoinMeeting = computed(() =>
+  $props.booking.type.toLowerCase() === "virtual" &&
+  isMeetingJoinAvailable($props.booking, new Date(meetingNow.value)),
+);
 
 const showDetails = ref(false);
+
+function notifyMeetingJoin(event: MouseEvent) {
+  if (!isMeetingJoinAvailable($props.booking)) {
+    event.preventDefault();
+    appStore.setError("El enlace estará disponible desde 15 minutos antes del inicio y hasta que termine la clase.");
+    return;
+  }
+
+  const currentUser = userStore.currentUser;
+  void sendMeetingJoinNotification($props.booking, {
+    _id: currentUser?._id,
+    name: currentUser?.name,
+  }).catch((error: unknown) => {
+    console.error("No fue posible enviar el aviso de ingreso a la clase.", error);
+    appStore.setError("No pudimos avisar al otro participante por correo. El enlace de la reunión sigue disponible.");
+  });
+}
 
 const normalizeDateOnly = (value: string | number | Date | null | undefined) => {
   if (!value) return null;

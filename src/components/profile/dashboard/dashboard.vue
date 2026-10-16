@@ -1,10 +1,10 @@
 <template>
   <template v-if="dashboardStore.isLoading">
     <div class="stats-cards">
-      <StatsCards v-for="n in 4" :key="n" :skeleton="true" />
+      <StatsCards v-for="n in 4" :key="n" title="" value="" subtitle="" :skeleton="true" />
     </div>
   </template>
-  <template v-else>
+  <template v-else-if="dashboard?.stats">
     <div class="stats-cards">
       <StatsCards title="Estudiantes" :value="dashboard.stats.students.toString()"
         :indicator-num="dashboard.stats.diferenceStudents" subtitle="Alumnos Atendidos" />
@@ -28,7 +28,7 @@
         </div>
       </template>
       <template v-else>
-        <div v-if="dashboard.nextBookings.length > 0" class="bookings-cards">
+        <div v-if="dashboard?.nextBookings && dashboard.nextBookings.length > 0" class="bookings-cards">
           <BookingsCards v-for="booking in dashboard.nextBookings" :booking="booking" />
         </div>
         <div v-else class="bookings-cards">
@@ -44,7 +44,7 @@
           </div>
         </div>
         <div class="graph">
-          <BookingChart :data="dashboard.students" />
+          <BookingChart v-if="dashboard" :data="dashboard.students" />
         </div>
       </template>
   </div>

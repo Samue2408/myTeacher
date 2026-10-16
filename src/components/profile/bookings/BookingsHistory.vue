@@ -179,8 +179,9 @@ onMounted(async () => {
 .pagination button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #dce2ea; border-radius: 7px; background: #fff; color: var(--color-primary); cursor: pointer; }
 .pagination button:disabled { opacity: .45; cursor: not-allowed; }
 .pagination .material-icons-outlined { font-size: 18px; }
-.review-modal-overlay { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 20px; background: rgba(16, 24, 40, .52); }
-.review-modal { position: relative; width: min(100%, 420px); padding: 26px; border-radius: 14px; background: #fff; box-shadow: 0 16px 40px rgba(16, 24, 40, .2); }
+.review-modal-overlay { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; overflow-y: auto; padding: 16px; background: rgba(16, 24, 40, .52); }
+.review-modal { position: relative; box-sizing: border-box; width: min(100%, 420px); max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; padding: 26px; border-radius: 14px; background: #fff; box-shadow: 0 16px 40px rgba(16, 24, 40, .2); }
+@supports (height: 100dvh) { .review-modal { max-height: calc(100dvh - 32px); } }
 .review-close { position: absolute; top: 12px; right: 12px; display: grid; padding: 4px; border: 0; background: transparent; color: #68758a; cursor: pointer; }
 .review-eyebrow { margin: 0 0 4px; color: var(--color-primary); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .review-modal h4 { margin: 0; color: #252b34; font-size: 19px; }.review-student { margin: 6px 0 0; color: #727b88; font-size: 13px; }

@@ -111,8 +111,9 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
-.modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(0, 0, 0, .5); }
-.modal-content { position: relative; width: min(100%, 500px); padding: 2rem; border-radius: 12px; background: linear-gradient(145deg, #fff 0%, #f5f7fc 38%); }
+.modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 16px; background: rgba(0, 0, 0, .5); }
+.modal-content { position: relative; box-sizing: border-box; width: min(100%, 500px); max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain; padding: 2rem; border-radius: 12px; background: linear-gradient(145deg, #fff 0%, #f5f7fc 38%); }
+@supports (height: 100dvh) { .modal-content { max-height: calc(100dvh - 32px); } }
 .close-button { position: absolute; top: 14px; right: 14px; display: grid; place-items: center; padding: 4px; border: 0; background: transparent; color: #777; cursor: pointer; }
 h2 { margin: 0; text-align: center; font-size: 24px; }
 h2 span { color: var(--color-primary); }

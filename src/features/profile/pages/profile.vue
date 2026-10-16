@@ -29,7 +29,27 @@
           <article><span class="material-icons-outlined orange">pending_actions</span><div><small>En espera</small><strong>{{ pendingBookings }}</strong></div></article>
           <article v-if="currentUser.balance !== undefined"><span class="material-icons-outlined purple">account_balance_wallet</span><div><small>Saldo disponible</small><strong>{{ formatCurrency(currentUser.balance) }}</strong></div></article>
         </div>
-        <div class="student-content"><div class="section-card"><div class="section-title"><div><h3>Próximas clases</h3><p>Tus reservas más recientes.</p></div><button class="link-button" @click="router.push('/bookings')">Ver todas</button></div><div v-if="studentLoading" class="loading-inline"><span class="spinner" /> Cargando reservas...</div><div v-else-if="upcomingBookings.length" class="booking-list"><article v-for="booking in upcomingBookings" :key="booking._id" class="student-booking"><span class="date-box"><strong>{{ day(booking.date) }}</strong><small>{{ month(booking.date) }}</small></span><div><h4>{{ booking.subject?.name || 'Clase' }}</h4><p>Con {{ tutorName(booking) }} · {{ booking.startTime }} - {{ booking.endTime }}</p></div><span :class="['status', statusClass(booking.status)]">{{ booking.status }}</span></article></div><div v-else class="empty-state"><span class="material-icons-outlined">calendar_month</span><h4>Aún no tienes clases reservadas</h4><p>Encuentra un tutor y agenda tu primera clase.</p><button class="primary" @click="router.push('/search')">Buscar tutor</button></div></div><aside class="section-card help-card"><span class="material-icons-outlined">auto_stories</span><h3>¿Listo para aprender?</h3><p>Explora tutores por materia, selecciona un horario y confirma tu reserva.</p><button class="secondary" @click="router.push('/search')">Explorar materias</button></aside></div>
+        <div class="student-content"><div class="section-card"><div class="section-title"><div><h3>Próximas clases</h3><p>Tus reservas más cercanas.</p></div><button class="link-button" @click="router.push('/bookings')">Ver todas</button></div><div v-if="studentLoading" class="loading-inline"><span class="spinner" /> Cargando reservas...</div><div v-else-if="upcomingBookings.length" class="booking-list"><article v-for="booking in upcomingBookings" :key="booking._id" class="student-booking"><span class="date-box"><strong>{{ day(booking.date) }}</strong><small>{{ month(booking.date) }}</small></span><div><h4>{{ booking.subject?.name || 'Clase' }}</h4><p>Con {{ tutorName(booking) }} · {{ booking.startTime }} - {{ booking.endTime }}</p></div><span :class="['status', statusClass(booking.status)]">{{ booking.status }}</span>
+          <a v-if="booking.type === 'Virtual' && booking.videoCallLink" 
+           :href="isMeetingJoinAvailable(booking, new Date(meetingNow)) ? booking.videoCallLink: '#'"
+           :aria-disabled="!isMeetingJoinAvailable(booking, new Date(meetingNow))"
+           target="_blank" 
+           rel="noopener" 
+           class="student-join-link" 
+           @click="handleMeetingJoin($event, booking)">
+            <span class="material-icons-outlined">videocam</span>
+            Ir al enlace
+          </a>
+          <a v-else-if="booking.type === 'Virtual' && booking.videoCallLink && isMeetingJoinAvailable(booking, new Date(meetingNow))" 
+           :href="booking.videoCallLink" 
+           target="_blank" 
+           rel="noopener" 
+           class="student-join-link" 
+           @click="handleMeetingJoin($event, booking)">
+            <span class="material-icons-outlined">videocam</span>
+            Ir al enlace
+          </a>
+        </article></div><div v-else class="empty-state"><span class="material-icons-outlined">calendar_month</span><h4>Aún no tienes clases reservadas</h4><p>Encuentra un tutor y agenda tu primera clase.</p><button class="primary" @click="router.push('/search')">Buscar tutor</button></div></div><aside class="section-card help-card"><span class="material-icons-outlined">auto_stories</span><h3>¿Listo para aprender?</h3><p>Explora tutores por materia, selecciona un horario y confirma tu reserva.</p><button class="secondary" @click="router.push('/search')">Explorar materias</button></aside></div>
       </template>
 
       <template v-else>
@@ -60,12 +80,47 @@ import RatingStars from "@/shared/components/RatingStars.vue";
 import BookingsHistory from "@/components/profile/bookings/BookingsHistory.vue";
 import EditProfileModal from "@/components/profile/editProfileModal.vue";
 import ChangePasswordModal from "@/components/profile/changePasswordModal.vue";
+import { useAppStore } from "@/stores/appStore";
+import { sendMeetingJoinNotification } from "@/utils/meetingJoinNotification";
+import { getMeetingWindow, isMeetingJoinAvailable as canJoinMeeting, useMeetingClock } from "@/utils/meetingAvailability";
 const router = useRouter(), auth = useAuthStore(), usersStore = useUserStore(), bookingsStore = useBookingsStore();
+const appStore = useAppStore();
 const { currentUser } = storeToRefs(usersStore); const { studentBookings, isLoadingStudent: studentLoading } = storeToRefs(bookingsStore);
+const meetingNow = useMeetingClock();
 const activeTab = ref('Resumen'), showEditProfile = ref(false), showChangePassword = ref(false); const tutorTabs = ['Resumen','Materias a Impartir','Disponibilidad','Reservas','Balance'];
 const isStudent = computed(() => String(currentUser.value?.role || '').toLocaleLowerCase() === 'estudiante'); const initial = computed(() => currentUser.value?.name?.[0]?.toUpperCase() || 'U'); const firstName = computed(() => currentUser.value?.name?.split(' ')[0] || '');
 const locationLabel = computed(() => { const location = currentUser.value?.location; return [location?.city, location?.country].filter(Boolean).join(', ') || 'No registrada'; });
-const acceptedBookings = computed(() => studentBookings.value.filter(b => b.status === 'Aceptada' || b.status === 'Completada').length); const pendingBookings = computed(() => studentBookings.value.filter(b => b.status === 'Pendiente').length); const upcomingBookings = computed(() => [...studentBookings.value].filter(b => b.status !== 'Cancelada').sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0,4));
+const acceptedBookings = computed(() => studentBookings.value.filter(b => b.status === 'Aceptada' || b.status === 'Completada').length); const pendingBookings = computed(() => studentBookings.value.filter(b => b.status === 'Pendiente').length); const upcomingBookings = computed(() => {
+  const now = new Date(meetingNow.value);
+  return [...studentBookings.value]
+    .filter((booking) => {
+      const status = String(booking.status).toLocaleLowerCase();
+      const window = getMeetingWindow(booking);
+      return status !== 'cancelada' && status !== 'completada' && window && window.end >= now;
+    })
+    .sort((first, second) => {
+      const firstStart = getMeetingWindow(first)?.start.getTime() || 0;
+      const secondStart = getMeetingWindow(second)?.start.getTime() || 0;
+      return firstStart - secondStart;
+    })
+    .slice(0, 4);
+});
+const isMeetingJoinAvailable = (booking, now = new Date()) => canJoinMeeting(booking, now);
+const handleMeetingJoin = (event, booking) => {
+  if (!isMeetingJoinAvailable(booking, new Date())) {
+    event.preventDefault();
+    appStore.setError("El enlace estará disponible desde 15 minutos antes del inicio y hasta que termine la clase.");
+    return;
+  }
+
+  void sendMeetingJoinNotification(booking, {
+    _id: currentUser.value?._id,
+    name: currentUser.value?.name,
+  }).catch((error) => {
+    console.error("No fue posible enviar el aviso de ingreso a la clase.", error);
+    appStore.setError("No pudimos avisar al tutor por correo. El enlace de la reunión sigue disponible.");
+  });
+};
 const tutorName = booking => booking.tutor?.name || 'Tutor'; const day = date => new Intl.DateTimeFormat('es-CO',{day:'2-digit'}).format(new Date(`${String(date).slice(0,10)}T12:00:00`)); const month = date => new Intl.DateTimeFormat('es-CO',{month:'short'}).format(new Date(`${String(date).slice(0,10)}T12:00:00`)).replace('.',''); const formatCurrency = amount => new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(amount || 0); const statusClass = status => `status-${String(status).toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}`;
 const loadStudentBookings = id => { if (isStudent.value && id) bookingsStore.fetchBookingsByStudent(id); };
 onMounted(async () => { if (!currentUser.value) await auth.restoreSession(); loadStudentBookings(currentUser.value?._id); }); watch(() => currentUser.value?._id, loadStudentBookings);
@@ -75,7 +130,6 @@ const goBack = () => router.back(); const handleLogout = () => { auth.logout(); 
 <style scoped>
 /* .dashboard{display:flex;min-height:calc(100vh - 8vh);background:#f8fafc;color:#252b36;font-family:Inter,sans-serif}
 .sidebar{width:280px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px;padding:28px 24px;background:#fff;border-right:1px solid #e8ebf0}.back,.outline{display:flex;align-items:center;gap:6px;border:0;background:none;cursor:pointer}.back{color:var(--color-primary);font-weight:700;text-align:left}.back .material-icons-outlined,.outline .material-icons-outlined{font-size:17px}.profile-pic,.avatar{width:92px;height:92px;align-self:center;border-radius:50%;object-fit:cover}.avatar{display:grid;place-items:center;background:#08b294;color:#fff;font-size:46px;font-weight:700}.name{display:flex;justify-content:center;align-items:center;gap:5px;text-align:center}.name h1{margin:0;font-size:20px}.verified{color:#08b294;font-size:19px}.role{margin:-14px 0 0;text-align:center;color:#78818e;font-size:13px}.info{display:flex;flex-direction:column;gap:14px}.info-item{display:flex;gap:9px;align-items:flex-start}.info-item>.material-icons-outlined{color:#7b8592;font-size:17px}.info-item label,.rating label{display:block;color:#818a96;font-size:11px}.info-item p{margin:3px 0 0;overflow-wrap:anywhere;font-size:13px;font-weight:600}.rating{display:flex;flex-direction:column;gap:3px}.outline{justify-content:center;padding:10px;border:1px solid #dce1e8;border-radius:8px;color:#303744;font-size:13px;font-weight:700}.outline:hover{background:#f5f7fa}.logout{margin-top:auto;border-color:#f0b9b7;color:#d52d2a}.main{flex:1;min-width:0;padding:32px;overflow:auto}.tabs{display:flex;gap:12px;margin-bottom:22px;border-bottom:1px solid #e3e6eb}.tabs button{padding:11px 14px;border:0;border-bottom:2px solid transparent;background:none;color:#697383;cursor:pointer}.tabs button.active{border-color:var(--color-primary);color:var(--color-primary);font-weight:700}.section{min-height:90%}.student-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:28px}.eyebrow{margin:0 0 5px;color:var(--color-primary);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.student-header h2{margin:0 0 7px;font-size:28px}.student-header p:not(.eyebrow){margin:0;color:#707a88}.primary,.secondary{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border:0;border-radius:8px;background:var(--color-primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer}.primary .material-icons-outlined{font-size:17px}.student-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.student-stats article{display:flex;gap:11px;align-items:center;padding:17px;background:#fff;border:1px solid #e7ebf1;border-radius:12px}.student-stats .material-icons-outlined{padding:8px;border-radius:8px;font-size:22px}.blue{background:#eaf1ff;color:#2765c6}.green{background:#e5f7ed;color:#13844e}.orange{background:#fff2df;color:#b36300}.purple{background:#f0ebff;color:#6c4cc3}.student-stats small,.student-stats strong{display:block}.student-stats small{color:#78818e;font-size:11px}.student-stats strong{margin-top:3px;font-size:19px}.student-content{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}.section-card{padding:22px;background:#fff;border:1px solid #e7ebf1;border-radius:14px}.section-title{display:flex;justify-content:space-between;align-items:start}.section-title h3,.help-card h3{margin:0 0 5px;font-size:17px}.section-title p,.help-card p{margin:0;color:#717a88;font-size:13px}.link-button{border:0;background:none;color:var(--color-primary);font-weight:700;cursor:pointer}.booking-list{display:flex;flex-direction:column;margin-top:16px}.student-booking{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #edf0f3}.date-box{width:40px;padding:6px 0;border-radius:8px;background:#eef3ff;color:var(--color-primary);text-align:center}.date-box strong,.date-box small{display:block}.date-box strong{font-size:16px}.date-box small{font-size:10px;text-transform:capitalize}.student-booking>div{flex:1}.student-booking h4{margin:0 0 4px;font-size:14px}.student-booking p{margin:0;color:#737d8a;font-size:12px}.status{padding:5px 8px;border-radius:99px;font-size:10px;font-weight:800}.status-pendiente{background:#fff2df;color:#a15a00}.status-aceptada{background:#e5f7ed;color:#127541}.status-completada{background:#e7f0ff;color:#235ec1}.help-card{align-self:start;background:linear-gradient(135deg,#eff5ff,#fff)}.help-card>.material-icons-outlined{margin-bottom:12px;color:var(--color-primary);font-size:32px}.secondary{margin-top:17px;background:#fff;color:var(--color-primary);border:1px solid #c9d8f3}.empty-state,.loading-inline,.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.empty-state{padding:35px 15px}.empty-state .material-icons-outlined{color:#8792a0;font-size:40px}.empty-state h4{margin:9px 0 5px}.empty-state p{margin:0 0 14px;color:#737d8a;font-size:13px}.loading{height:calc(100vh - 8vh)}.loading-inline{min-height:150px;color:#7b8592;font-size:13px}.spinner{width:32px;height:32px;margin-bottom:10px;border:3px solid #dfe8fa;border-top-color:var(--color-primary);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:1000px){.student-stats{grid-template-columns:repeat(2,1fr)}.student-content{grid-template-columns:1fr}}@media(max-width:720px){.dashboard{display:block}.sidebar{width:100%;border-right:0;border-bottom:1px solid #e8ebf0}.main{padding:22px 16px}.student-header{align-items:start;flex-direction:column}.student-stats{grid-template-columns:1fr}.profile-pic,.avatar{width:70px;height:70px}.avatar{font-size:34px}} */
-
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
 .dashboard {
@@ -423,6 +477,8 @@ section {
 
   .primary,.secondary {
     display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px;border:0;border-radius:8px;background:var(--color-primary);color:#fff;font-size:13px;font-weight:700;cursor:pointer}.primary .material-icons-outlined{font-size:17px}.student-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.student-stats article{display:flex;gap:11px;align-items:center;padding:17px;background:#fff;border:1px solid #e7ebf1;border-radius:12px}.student-stats .material-icons-outlined{padding:8px;border-radius:8px;font-size:22px}.blue{background:#eaf1ff;color:#2765c6}.green{background:#e5f7ed;color:#13844e}.orange{background:#fff2df;color:#b36300}.purple{background:#f0ebff;color:#6c4cc3}.student-stats small,.student-stats strong{display:block}.student-stats small{color:#78818e;font-size:11px}.student-stats strong{margin-top:3px;font-size:19px}.student-content{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}.section-card{padding:22px;background:#fff;border:1px solid #e7ebf1;border-radius:14px}.section-title{display:flex;justify-content:space-between;align-items:start}.section-title h3,.help-card h3{margin:0 0 5px;font-size:17px}.section-title p,.help-card p{margin:0;color:#717a88;font-size:13px}.link-button{border:0;background:none;color:var(--color-primary);font-weight:700;cursor:pointer}.booking-list{display:flex;flex-direction:column;margin-top:16px}.student-booking{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid #edf0f3}.date-box{width:40px;padding:6px 0;border-radius:8px;background:#eef3ff;color:var(--color-primary);text-align:center}.date-box strong,.date-box small{display:block}.date-box strong{font-size:16px}.date-box small{font-size:10px;text-transform:capitalize}.student-booking>div{flex:1}.student-booking h4{margin:0 0 4px;font-size:14px}.student-booking p{margin:0;color:#737d8a;font-size:12px}.status{padding:5px 8px;border-radius:99px;font-size:10px;font-weight:800}.status-pendiente{background:#fff2df;color:#a15a00}.status-aceptada{background:#e5f7ed;color:#127541}.status-completada{background:#e7f0ff;color:#235ec1}.help-card{align-self:start;background:linear-gradient(135deg,#eff5ff,#fff)}.help-card>.material-icons-outlined{margin-bottom:12px;color:var(--color-primary);font-size:32px}.secondary{margin-top:17px;background:#fff;color:var(--color-primary);border:1px solid #c9d8f3}.empty-state,.loading-inline,.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.empty-state{padding:35px 15px}.empty-state .material-icons-outlined{color:#8792a0;font-size:40px}.empty-state h4{margin:9px 0 5px}.empty-state p{margin:0 0 14px;color:#737d8a;font-size:13px}.loading{height:calc(100vh - 8vh)}.loading-inline{min-height:150px;color:#7b8592;font-size:13px}.spinner{width:32px;height:32px;margin-bottom:10px;border:3px solid #dfe8fa;border-top-color:var(--color-primary);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}@media(max-width:1000px){.student-stats{grid-template-columns:repeat(2,1fr)}.student-content{grid-template-columns:1fr}}@media(max-width:720px){.dashboard{display:block}.sidebar{width:100%;border-right:0;border-bottom:1px solid #e8ebf0}.main{padding:22px 16px}.student-header{align-items:start;flex-direction:column}.student-stats{grid-template-columns:1fr}.profile-pic,.avatar{width:70px;height:70px}.avatar{font-size:34px}} 
-
-
+.student-join-link { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; padding: 7px 9px; border-radius: 7px; background: var(--color-primary); color: #fff; font-size: 11px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.student-join-link .material-icons-outlined { font-size: 15px; }
+.student-join-link:hover { filter: brightness(.94); }
+@media (max-width: 720px) { .student-booking { flex-wrap: wrap; } .student-join-link { margin-left: 52px; } }
 </style>

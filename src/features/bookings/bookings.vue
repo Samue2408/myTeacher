@@ -136,7 +136,17 @@
           </form>
         </section>
 
-        <a v-if="selectedBooking.type === 'Virtual' && selectedBooking.videoCallLink" :href="selectedBooking.videoCallLink" target="_blank" rel="noopener" class="join-button">Unirse a la videollamada</a>
+        <a 
+         v-if="selectedBooking.videoCallLink" 
+         :href="canJoinSelectedMeeting ? selectedBooking.videoCallLink: '#'" 
+         :aria-disabled="!canJoinSelectedMeeting"
+         target="_blank" 
+         rel="noopener" 
+         class="join-button" 
+         @click="notifyMeetingJoin($event, selectedBooking)"
+        >
+          Unirse a la videollamada
+        </a>
       </section>
     </div>
   </main>
@@ -150,6 +160,9 @@ import ReviewDetails from "@/shared/components/ReviewDetails.vue";
 import { useBookingsStore } from "@/stores/bookingsStore";
 import { useReviewsStore } from "@/stores/reviewsStore";
 import { useUserStore } from "@/stores/userStore";
+import { useAppStore } from "@/stores/appStore";
+import { sendMeetingJoinNotification } from "@/utils/meetingJoinNotification";
+import { isMeetingJoinAvailable, useMeetingClock } from "@/utils/meetingAvailability";
 import { AvailabilityService } from "@/api/availability.service";
 import type { BookingsType } from "@/types/bookings";
 import { useRouter } from "vue-router";
@@ -157,6 +170,8 @@ import { useRouter } from "vue-router";
 const bookingsStore = useBookingsStore();
 const reviewsStore = useReviewsStore();
 const userStore = useUserStore();
+const appStore = useAppStore();
+const meetingNow = useMeetingClock();
 const { currentUser } = storeToRefs(userStore);
 const { isLoadingStudent: isLoading } = storeToRefs(bookingsStore);
 const { currentReview, isLoading: isReviewLoading, isSaving: isReviewSaving } = storeToRefs(reviewsStore);
@@ -213,6 +228,28 @@ const handlePayment = (booking: BookingsType) => {
 const hasActiveFilters = computed(() => Boolean(statusFilter.value || tutorFilter.value));
 const clearFilters = () => { statusFilter.value = ""; tutorFilter.value = ""; };
 const isStudent = computed(() => ["estudiante", "student"].includes(String(currentUser.value?.role || "").toLocaleLowerCase()));
+const canJoinSelectedMeeting = computed(() => Boolean(
+  selectedBooking.value?.type === "Virtual" &&
+  isMeetingJoinAvailable(selectedBooking.value, new Date(meetingNow.value)),
+));
+
+function notifyMeetingJoin(event: MouseEvent, booking: BookingsType) {
+  if (!isMeetingJoinAvailable(booking)) {
+    event.preventDefault();
+    appStore.setError("El enlace estará disponible desde 15 minutos antes del inicio y hasta que termine la clase.");
+    return;
+  }
+
+  const joiningUser = currentUser.value;
+  void sendMeetingJoinNotification(booking, {
+    _id: joiningUser?._id,
+    name: joiningUser?.name,
+  }).catch((error: unknown) => {
+    console.error("No fue posible enviar el aviso de ingreso a la clase.", error);
+    appStore.setError("No pudimos avisar al otro participante por correo. El enlace de la reunión sigue disponible.");
+  });
+}
+
 const isCompletedBooking = (booking: BookingsType) => booking.status.toLocaleLowerCase("es-CO") === "completada";
 const canManageReview = computed(() => Boolean(selectedBooking.value && isStudent.value && isCompletedBooking(selectedBooking.value)));
 const isUpcomingBooking = (booking: BookingsType) => new Date(`${booking.date.slice(0, 10)}T${booking.endTime}:00`).getTime() > Date.now();
@@ -381,7 +418,8 @@ h1, h2, p { margin-top: 0; }.reservas-header h1 { margin-bottom: 6px; font-size:
 .status { flex: 0 0 auto; padding: 5px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }.status-pendiente { color: #a45e00; background: #fff3df; }.status-aceptada { color: #147749; background: #e5f7ed; }.status-completada { color: #155ab5; background: #e8f1ff; }.status-cancelada { color: #c42b2b; background: #ffebeb; }
 .booking-summary { display: grid; gap: 14px; margin: 25px 0; padding: 16px 0; border-block: 1px solid #edf0f3; }.booking-summary > div { gap: 9px; }.booking-summary .material-icons-outlined { color: #68758a; font-size: 18px; }.booking-summary p { display: flex; align-items: baseline; justify-content: space-between; width: 100%; margin: 0; }.booking-summary small { color: #7b838f; font-size: 12px; }.booking-summary strong { font-size: 13px; }.reserva-footer { margin-top: auto; }.price { color: #08a185; font-size: 16px; }.details-button, .clear-filters, .join-button { border: 0; border-radius: 8px; padding: 9px 13px; color: #fff; background: var(--color-primary); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; }.details-button:hover, .join-button:hover { filter: brightness(.94); }
 .loading-state, .no-data { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 240px; color: #737b88; text-align: center; }.loading-state { flex-direction: row; gap: 10px; }.spinner { width: 22px; height: 22px; border: 3px solid #dce4f2; border-top-color: var(--color-primary); border-radius: 50%; animation: spin .8s linear infinite; }.no-data .material-icons-outlined { margin-bottom: 12px; color: #9da6b3; font-size: 54px; }.no-data h2 { margin-bottom: 7px; color: #373d46; font-size: 19px; }.no-data p { margin-bottom: 16px; }.clear-filters { background: #f0f3f8; color: var(--color-primary); }
-.modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(16, 24, 40, .52); overflow-y: auto; }.details-modal { position: relative; width: min(100%, 500px); max-height: calc(100vh - 40px); padding: 28px; border-radius: 16px; background: #fff; overflow-y: auto; }.details-modal h2 { margin-bottom: 12px; font-size: 23px; }.close-button { position: absolute; top: 14px; right: 14px; display: grid; padding: 4px; border: 0; background: transparent; color: #68758a; cursor: pointer; }.details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }.details-list div { padding: 10px 0; border-bottom: 1px solid #edf0f3; }.details-list dt { margin-bottom: 4px; color: #7b838f; font-size: 12px; }.details-list dd { margin: 0; color: #242933; font-size: 14px; font-weight: 600; }.join-button { display: block; text-align: center; }
+.modal-overlay { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 16px; background: rgba(16, 24, 40, .52); overflow-y: auto; }.details-modal { position: relative; box-sizing: border-box; width: min(100%, 500px); max-height: calc(100vh - 32px); padding: 28px; border-radius: 16px; background: #fff; overflow-y: auto; overscroll-behavior: contain; }.details-modal h2 { margin-bottom: 12px; font-size: 23px; }.close-button { position: absolute; top: 14px; right: 14px; display: grid; padding: 4px; border: 0; background: transparent; color: #68758a; cursor: pointer; }.details-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 24px 0; }.details-list div { padding: 10px 0; border-bottom: 1px solid #edf0f3; }.details-list dt { margin-bottom: 4px; color: #7b838f; font-size: 12px; }.details-list dd { margin: 0; color: #242933; font-size: 14px; font-weight: 600; }.join-button { display: block; text-align: center; }
+@supports (height: 100dvh) { .details-modal { max-height: calc(100dvh - 32px); } }
 .review-section { margin: 24px 0; padding: 20px; border: 1px solid #dfe8e6; border-radius: 12px; background: #fbfefd; }.review-heading .eyebrow { margin-bottom: 3px; font-size: 11px; }.review-heading h3 { margin: 0; font-size: 17px; }.review-loading { display: flex; align-items: center; gap: 9px; min-height: 72px; color: #737b88; font-size: 13px; }.review-loading .spinner { width: 18px; height: 18px; border-width: 2px; }.review-rating { display: flex; align-items: center; gap: 3px; margin: 16px 0 10px; }.review-rating .material-icons-outlined, .star-picker .material-icons-outlined { color: #d4d9df; }.review-rating .active, .star-picker .active { color: #f5b301; }.review-rating strong { margin-left: 5px; color: #4a5360; font-size: 13px; }.review-comment { margin: 0; color: #3f4650; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }.review-form { margin-top: 14px; }.review-help { margin: 0 0 12px; color: #69707d; font-size: 13px; }.star-picker { display: flex; gap: 3px; margin-bottom: 14px; }.star-picker button { padding: 0; border: 0; background: transparent; font-size: 29px; cursor: pointer; }.star-picker button:hover { transform: scale(1.08); }.review-form label { display: block; margin-bottom: 6px; color: #505966; font-size: 13px; font-weight: 700; }.review-form textarea { box-sizing: border-box; width: 100%; min-height: 88px; padding: 10px; resize: vertical; border: 1px solid #d8dee7; border-radius: 8px; color: #303743; font: inherit; font-size: 13px; }.review-form textarea:focus { outline: 2px solid rgba(8, 178, 148, .2); border-color: var(--color-primary); }.review-error { margin: 8px 0 0; color: #c42b2b; font-size: 12px; }.review-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 14px; }.review-secondary, .review-delete, .review-submit { padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }.review-secondary { border: 1px solid #d8dee7; background: #fff; color: #4b5563; }.review-delete { border: 1px solid #f1c1c1; background: #fff; color: #c42b2b; }.review-submit { border: 0; background: var(--color-primary); color: #fff; }.review-actions button:disabled { cursor: wait; opacity: .65; }
 .fade-enter-active, .fade-leave-active { transition: all .2s ease; }.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(8px); }@keyframes spin { to { transform: rotate(360deg); } }@media (max-width: 600px) { .reservas-container { padding: 32px 16px; }.filters { flex-direction: column; max-width: none; }.reservas-header h1 { font-size: 27px; }.details-list { grid-template-columns: 1fr; gap: 0; }.details-modal { padding: 24px 18px; }.review-section { padding: 16px; } }
 .booking-management { margin: 0 0 20px; padding: 16px; border: 1px solid #e5e9ef; border-radius: 10px; background: #fbfcfd; }

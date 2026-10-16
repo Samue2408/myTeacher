@@ -156,6 +156,8 @@ const updateSubject = async () => {
 .modal-overlay {
   position: fixed;
   inset: 0;
+  overflow-y: auto;
+  padding: 16px;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
@@ -175,6 +177,10 @@ const updateSubject = async () => {
 
 /* Caja del modal */
 .modal-content {
+  box-sizing: border-box;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: linear-gradient(
     145deg,
     rgba(255, 255, 255, 1) 0%,
@@ -186,6 +192,12 @@ const updateSubject = async () => {
   border-radius: 12px;
   text-align: center;
   animation: scale-modal .4s ease;
+}
+
+@supports (height: 100dvh) {
+  .modal-content {
+    max-height: calc(100dvh - 32px);
+  }
 }
 
 @keyframes scale-modal {
